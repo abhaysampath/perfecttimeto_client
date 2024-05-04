@@ -14,32 +14,3 @@ export const SEARCH_BOX_STYLE = {
     top: '15px',
     right: '70px'
 };
-
-//Map Display Styles
-export const MAP_CONTAINER_STYLE = {
-    width: '100vw',   // Full width of the viewport
-    height: '100vh'  // Full height of the viewport
-};
-export const CUSTOM_MAP_STYLE = [
-    {
-      "featureType": "landscape",
-      "elementType": "geometry",
-      "stylers": [
-        { "color": "#dff2d3" }
-      ]
-    },
-    {
-      "featureType": "poi.park",
-      "elementType": "geometry",
-      "stylers": [
-        { "color": "#83cead" }
-      ]
-    },
-    {
-      "featureType": "water",
-      "elementType": "geometry",
-      "stylers": [
-        { "color": "#a2daf2" }
-      ]
-    }
-];

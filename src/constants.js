@@ -7,7 +7,3 @@ export const PLACES_LIBRARY = ['places'];
 // export const SEARCH_ZOOM_LEVEL = 10;
 export const DEFAULT_ZOOM_LEVEL = 14;
 export const INITIAL_ZIP_CODE ='11232';
-export const INITIAL_MAP_CENTER = {
-    lat: 40.7128,
-    lng: -74.0060
-};

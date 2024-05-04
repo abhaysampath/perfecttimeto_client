@@ -1,0 +1,38 @@
+/* markers.css */
+.map-marker {
+    position: absolute;
+    background: url('path_to_custom_marker_image.svg') no-repeat center;
+    background-size: contain;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+  }
+  
+  .map-marker-info {
+    min-width: 200px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    padding: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    border-radius: 5px;
+  }
+  
+  .map-marker-info h3 {
+    margin-top: 0;
+    color: #333;
+  }
+  
+  .map-marker-info p {
+    font-size: 14px;
+    color: #666;
+  }
+  
+  .map-marker-info button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  

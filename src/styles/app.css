@@ -1,0 +1,70 @@
+.App {
+  text-align: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.App-header {
+  background-color: #172155;
+  min-height: 10vh;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-background {
+  background-color: #172155;
+  color: white;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 32px;
+  color: #F7F7F7;
+  margin-right: 20px;
+}
+
+.dropdown {
+  font-size: 32px;
+  padding: 10px;
+  border: none;
+  background-color: #000240;
+  color: #F7F7F7;
+}
+
+.GoogleMapContainer {
+  flex: 1;
+}
+
+.App-footer {
+  background-color: #172155;
+  min-height: 10vh;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+/* .footer {
+  background-color: #172155;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  right: 0;
+} */
