@@ -25,21 +25,20 @@ export const MAP_PARKS_STYLE = [
         featureType: "poi.park",
         elementType: "labels.text.fill",
         stylers: [{ color: "#9e9e9e" }]
+    },
+    {
+        featureType: "landscape",
+        elementType: "geometry",
+        stylers: [{ color: "#f3f4f4" }]  // Soft grey
+    },
+    {
+        featureType: "poi.park",
+        elementType: "geometry",
+        stylers: [{ color: "#e3eed3" }]  // Pastel green
+    },
+    {
+        featureType: "water",
+        elementType: "geometry",
+        stylers: [{ color: "#b8e1f2" }]
     }
-];
-export const CUSTOM_MAP_STYLE = [{
-    featureType: "landscape",
-    elementType: "geometry",
-    stylers: [{ color: "#f3f4f4" }]  // Soft grey
-  },
-  {
-    featureType: "poi.park",
-    elementType: "geometry",
-    stylers: [{ color: "#e3eed3" }]  // Pastel green
-  },
-  {
-    featureType: "water",
-    elementType: "geometry",
-    stylers: [{ color: "#b8e1f2" }]
-  }
 ];

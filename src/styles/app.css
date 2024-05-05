@@ -1,13 +1,12 @@
 .App {
   text-align: start;
   height: 100vh;
-  display: flex;
   flex-direction: column;
 }
 
 .App-header {
   background-color: #172155;
-  min-height: 10vh;
+  height: 5vh;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -30,6 +29,7 @@
 .main-content {
   flex: 1;
   display: flex;
+  height: fit-content;
   flex-direction: column;
 }
 
@@ -43,6 +43,7 @@
   font-size: 32px;
   padding: 10px;
   border: none;
+  height: 55px;
   background-color: #000240;
   color: #F7F7F7;
 }
@@ -53,18 +54,115 @@
 
 .App-footer {
   background-color: #172155;
-  min-height: 10vh;
-  padding: 20px;
-  display: flex;
+  height: 4vh;
+  padding: 2px;
+  height: fit-content;
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
 }
-/* .footer {
-  background-color: #172155;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  right: 0;
-} */
+
+.info-window {
+  color: black;
+  font-size: 14px;
+  font-family: 'Montserrat';
+  padding: 0;
+  width: 350px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-window-title {
+  text-align: center;
+  align-items: flex-start;
+  padding-top: 2px;
+  margin: 0;
+}
+
+.info-window-body {
+  text-align: start;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: auto;
+}
+
+.info-window-image {
+  padding-bottom: 10px;
+  width: 90px;
+  height: 95px;
+}
+
+.info-window-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.info-window-content {
+  padding: 0;
+  font-size: 17px;
+  font-weight: bolder;
+}
+
+.info-window-time-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #eee;
+  height: 25px;
+}
+
+.nav-button {
+  padding: 2px;
+  background-color: #eee;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button:disabled {
+  color: #ccc;
+}
+
+.remove-container {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.remove-button {
+  padding: 5px 10px;
+  background-color: transparent;
+  color: gray;
+  border: none;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: gray;
+  color: black;
+}
+
+.nav-button:hover,
+.remove-button:hover {
+  opacity: 0.8;
+}
+
+.loading-icon {
+  font-style: italic;
+}
+
+.close-button {
+  float: right;
+  margin-top: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background-color: #000;
+  color: #fff;
+}

@@ -5,6 +5,7 @@
   "dependencies": {
     "@react-google-maps/api": "^2.19.3",
     "@types/googlemaps": "^3.43.3",
+    "axios": "^1.6.8",
     "google-maps": "^4.3.3",
     "react": "^19.0.0-beta-94eed63c49-20240425",
     "react-dom": "^19.0.0-beta-94eed63c49-20240425",
