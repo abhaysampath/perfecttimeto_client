@@ -1,5 +1,5 @@
 import './styles/app.css';
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY } from './constants';
 import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
@@ -95,17 +95,22 @@ function App() {
           if (count && count >= 3) {
             console.log(`****Only taking 3 periods`);
             return;
-          }
+          } else { count = count + 1; }
           if (period.isDaytime === false) {
-            console.log(`    Skipping nighttime: isDaytime: ${JSON.stringify(period['isDaytime'])}`);
+            console.log(`    Skipping nighttime: isDaytime: ${JSON.stringify(period.isDaytime)}`);
+            return;
+          }
+          console.log(`      period.precipitation: ${period.probabilityOfPrecipitation.value}`);
+          if (period.probabilityOfPrecipitation.value && period.probabilityOfPrecipitation.value > 25) {
+            console.log(`    Skipping rain: ${JSON.stringify(period.probabilityOfPrecipitation.value)}`);
             return;
           }
           console.log(`    NOT SKIPPING: ${JSON.stringify(period)}`);
           addWeatherForecastToPlaces(key, period.startTime, period);
           console.log(`**  Period: ${JSON.stringify(period.startTime)}`);
-          count = count + 1;
+
         });
-        if (placesMap.get(key).forecast.length === 0) {
+        if (!placesMap.get(key).forecast || placesMap.get(key).forecast.length === 0) {
           console.log(`No matching points, add first entry to show`);
           addWeatherForecastToPlaces(key, periods[0].startTime, periods[0]);
         };
@@ -127,7 +132,7 @@ function App() {
       dateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { weekday: "short", year: "numeric", month: "short", day: "numeric" }),
       startTimeStr: new Date(forecast.startTime).toLocaleTimeString(),
       endTimeStr: new Date(forecast.endTime).toLocaleTimeString(),
-      timeRangeStr: (new Date(forecast.startTime).toLocaleTimeString() + "-" + new Date(forecast.endTime).toLocaleTimeString()).replace(":00:00 ", ""),
+      timeRangeStr: (new Date(forecast.startTime).toLocaleTimeString() + "-" + new Date(forecast.endTime).toLocaleTimeString()).replaceAll(":00:00 ", ""),
       shortDateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { year: "numeric", month: "short", day: "numeric" }),
       precipitation: forecast.probabilityOfPrecipitation.value,
       precipitationUnit: forecast.probabilityOfPrecipitation.unitCode,
@@ -244,14 +249,6 @@ function App() {
                           <ul className="info-window-list">
                             <table padding="0" className="info-window-content">
                               <tbody>
-                                <tr>
-                                  <td>Date: </td>
-                                  <td>{selectedMarker.current.shortDateStr}</td>
-                                </tr>
-                                <tr>
-                                  <td>Time Range: </td>
-                                  <td>{selectedMarker.current.timeRangeStr}</td>
-                                </tr>
                                 <tr>
                                   <td>Temperature: </td>
                                   <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} ({selectedMarker.current.trend})</td>
