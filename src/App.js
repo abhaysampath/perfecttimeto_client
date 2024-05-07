@@ -1,12 +1,18 @@
 import './styles/app.css';
 import { useState, useRef, useCallback } from "react";
 import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY } from './constants';
-import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
-import { IconsComponent } from './IconsComponent';
+import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, WEATHER_PERIOD_LIMIT } from './constants';
+import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
+import TuneIcon from '@mui/icons-material/Tune';
+// import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
+import { updatePlacesMap, loadWeatherForecast } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
+import { INIT_FILTER_CONFIG } from './filtersConfig';
+import { FiltersPanel } from './FiltersPanel';
 import axios from 'axios';
+// import { checkValidTimeOfDay, checkTemperature, checkWindSpeed, checkPrecipitation } from './Filters';
+import { checkValidTimeOfDay } from './Filters';
 
 function App() {
   const [mapRef, setMapRef] = useState(null);
@@ -16,6 +22,7 @@ function App() {
   const searchBoxRef = useRef(null);
   let placesMap = new Map();
   const [placesCounter, setPlacesCounter] = useState(0);
+  const [showFilters, setShowFilters] = useState(true);
 
   const onLoad = (ref) => {
     setMapRef(ref);
@@ -26,7 +33,6 @@ function App() {
   const onPlacesChanged = () => {
     const places = searchBoxRef.current.getPlaces();
     const bounds = new window.google.maps.LatLngBounds();
-
     places?.forEach(place => {
       if (place.geometry.viewport) {
         bounds.union(place.geometry.viewport);
@@ -89,26 +95,29 @@ function App() {
     axios.get(nws_forecast_url)
       .then(response => {
         const forecast_response = response.data;
+        updatePlacesMap(placesMap, key, "elevation", forecast_response.properties.elevation.value);
+        updatePlacesMap(placesMap, key, "elevationUnit", forecast_response.properties.elevation.unitCode);
         const periods = forecast_response.properties.periods;
         let count = 0;
         periods.forEach((period) => {
-          if (count && count >= 3) {
-            console.log(`****Only taking 3 periods`);
+          if (count && count >= WEATHER_PERIOD_LIMIT) {
+            console.log(`****Only taking ${WEATHER_PERIOD_LIMIT} periods`);
             return;
           } else { count = count + 1; }
-          if (period.isDaytime === false) {
+          if (checkValidTimeOfDay(period.isDaytime, period.startTime, period.endTime) === false) {
             console.log(`    Skipping nighttime: isDaytime: ${JSON.stringify(period.isDaytime)}`);
             return;
           }
-          console.log(`      period.precipitation: ${period.probabilityOfPrecipitation.value}`);
-          if (period.probabilityOfPrecipitation.value && period.probabilityOfPrecipitation.value > 25) {
-            console.log(`    Skipping rain: ${JSON.stringify(period.probabilityOfPrecipitation.value)}`);
-            return;
-          }
+          const precipitation = period.probabilityOfPrecipitation.value
+          console.log(`      period.precipitation: ${precipitation}`);
+          // if (precipitation && checkPrecipitation(precipitation, weatherFilters.precipitationFilters)) {
+          //   console.log(`    Skipping rain: ${JSON.stringify(precipitation)}`);
+          //   return;
+          // }
+          // if (includeAfter)
           console.log(`    NOT SKIPPING: ${JSON.stringify(period)}`);
           addWeatherForecastToPlaces(key, period.startTime, period);
           console.log(`**  Period: ${JSON.stringify(period.startTime)}`);
-
         });
         if (!placesMap.get(key).forecast || placesMap.get(key).forecast.length === 0) {
           console.log(`No matching points, add first entry to show`);
@@ -116,47 +125,26 @@ function App() {
         };
       });
   };
-  const addWeatherForecastToPlaces = (key, startTime, forecast) => {
+
+  const addWeatherForecastToPlaces = (key, startTime, newForecast) => {
     if (!placesMap.has(key)) {
-      console.warn(`  WTF?? ${forecast}`);
+      console.warn(`  WTF?? ${newForecast}`);
       return;
     }
     const existingEntry = placesMap.get(key);
     let existingForecasts = existingEntry.forecast || [];
-    const newForecast = {
-      timePeriod: forecast.name,
-      isDaytime: forecast.isDaytime,
-      temp: forecast.temperature,
-      tempUnit: forecast.temperatureUnit,
-      date: new Date(forecast.startTime).toDateString(),
-      dateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { weekday: "short", year: "numeric", month: "short", day: "numeric" }),
-      startTimeStr: new Date(forecast.startTime).toLocaleTimeString(),
-      endTimeStr: new Date(forecast.endTime).toLocaleTimeString(),
-      timeRangeStr: (new Date(forecast.startTime).toLocaleTimeString() + "-" + new Date(forecast.endTime).toLocaleTimeString()).replaceAll(":00:00 ", ""),
-      shortDateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { year: "numeric", month: "short", day: "numeric" }),
-      precipitation: forecast.probabilityOfPrecipitation.value,
-      precipitationUnit: forecast.probabilityOfPrecipitation.unitCode,
-      dewpoint: forecast.dewpoint.value,
-      dewpointUnit: forecast.dewpoint.unitCode,
-      relativeHumidity: forecast.relativeHumidity.value,
-      relativeHumidityUnit: forecast.relativeHumidity.unitCode,
-      startTime: new Date(forecast.startTime),
-      endTime: new Date(forecast.endTime),
-      windSpeed: forecast.windSpeed,
-      windDirection: forecast.windDirection,
-      trend: forecast.temperatureTrend,
-      desc: forecast.shortForecast,
-      fullDesc: forecast.detailedForecast,
-      weatherIcon: forecast.icon,
-    };
-    existingForecasts.push(newForecast);
+    existingForecasts.push(loadWeatherForecast(newForecast));
     placesMap.set(key, {
       ...existingEntry,
       forecast: existingForecasts
     });
   }
+
+  //Add Marker
   const onMarkerClick = useCallback((marker) => {
     marker['forecast'] = placesMap.get(marker.key).forecast;
+    marker['elevation'] = placesMap.get(marker.key).elevation;
+    marker['elevationUnit'] = placesMap.get(marker.key).elevationUnit;
     marker['isDaytime'] = placesMap.get(marker.key).isDaytime;
     marker['current'] = placesMap.get(marker.key).forecast[0];
     marker['num_forecasts'] = placesMap.get(marker.key).forecast.length;
@@ -181,6 +169,9 @@ function App() {
       });
     }
   };
+  const toggleFilterPanel = () => {
+    setShowFilters(prev => !prev);
+  };
 
   return (
     <div className="App">
@@ -190,6 +181,11 @@ function App() {
           <select className="dropdown" onChange={() => window.location.reload()}>
             <option>{activity}</option>
           </select>
+          <TuneIcon
+            alt="Filter Icon"
+            className="filter-icon"
+            onClick={toggleFilterPanel}
+          />
         </div>
       </header>
       <main className="main-content">
@@ -203,6 +199,7 @@ function App() {
             <div className="GoogleMapContainer">
               <GoogleMap
                 mapContainerStyle={MAP_CONTAINER_STYLE}
+                mapType={DEFAULT_MAP_TYPE}
                 style={MAP_PARKS_STYLE}
                 mapOptions={INITIAL_MAP_OPTIONS}
                 center={INITIAL_MAP_CENTER}
@@ -210,6 +207,7 @@ function App() {
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 onClick={onMapClick}
+                clickableIcons={false}
               >
                 <div>
                   <StandaloneSearchBox
@@ -250,16 +248,20 @@ function App() {
                             <table padding="0" className="info-window-content">
                               <tbody>
                                 <tr>
+                                  <td>Elevation: </td>
+                                  <td>{selectedMarker.current.elevation} {selectedMarker.current.elevationUnit}</td>
+                                </tr>
+                                <tr>
                                   <td>Temperature: </td>
                                   <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} ({selectedMarker.current.trend})</td>
                                 </tr>
                                 <tr>
                                   <td>Precipitation: </td>
-                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit == 'wmoUnit:percent' ? '%' : selectedMarker.current.precipitationUnit}</td>
+                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit === 'wmoUnit:percent' ? '%' : selectedMarker.current.precipitationUnit}</td>
                                 </tr>
                                 <tr>
                                   <td>Rel. Humidity: </td>
-                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit == 'wmoUnit:percent' ? '%' : selectedMarker.current.relativeHumidityUnit}</td>
+                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit === 'wmoUnit:percent' ? '%' : selectedMarker.current.relativeHumidityUnit}</td>
                                 </tr>
                                 <tr>
                                   <td>Wind Speed: </td>
@@ -282,9 +284,9 @@ function App() {
           )}
         </LoadScript>
       </main>
-      <footer className="App-footer">
-        <IconsComponent />
-      </footer>
+      {showFilters && (
+        <FiltersPanel filters={INIT_FILTER_CONFIG} />
+      )}
     </div>
   );
 }

@@ -11,6 +11,6 @@ export const SEARCH_BOX_STYLE = {
   outline: "none",
   textOverflow: "ellipses",
   position: 'absolute',
-  top: '15px',
-  right: '70px'
+  top: '14px',
+  left: '210px'
 };
