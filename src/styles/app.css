@@ -1,20 +1,21 @@
 .App {
   text-align: start;
+  display: fill;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
+  width: 100vw;
 }
 
 .App-header {
   background-color: #172155;
-  min-height: 10vh;
-  padding: 20px;
+  height: 72px;
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
   color: white;
+  z-index: 5;
+  opacity: 100%;
 }
 
 .App-background {
@@ -22,49 +23,154 @@
   color: white;
 }
 
-.header-content {
-  display: flex;
-  align-items: center;
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
 .title {
-  font-size: 32px;
+  font-size: calc(20px + 1vmin);
   color: #F7F7F7;
   margin-right: 20px;
 }
 
 .dropdown {
-  font-size: 32px;
-  padding: 10px;
+  font-size: calc(20px + 1vmin);
+  height: 45px;
+  height: calc(35px + 1vmin);
+  padding: 5px;
   border: none;
   background-color: #000240;
   color: #F7F7F7;
+  z-index: 5;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  height: auto;
+  z-index: 5;
+}
+
+.slider-container.disabled {
+  opacity: 0.5;
+}
+
+.main-content {
+  display: fill;
+  width: 100vw;
+  bottom: 0;
+  z-index: 1;
 }
 
 .GoogleMapContainer {
-  flex: 1;
+  display: fill;
+  height: 95vh;
+  width: 100vw;
+  bottom: 0;
+  z-index: 1;
 }
 
-.App-footer {
-  background-color: #172155;
-  min-height: 10vh;
-  padding: 20px;
-  display: flex;
+.search-box {
+  left: 10vh;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
-/* .footer {
-  background-color: #172155;
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  right: 0;
-} */
+
+.info-window {
+  color: black;
+  font-size: 14px;
+  font-family: 'Montserrat';
+  padding: 0;
+  width: 350px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-window-title {
+  text-align: center;
+  align-items: flex-start;
+  padding-top: 2px;
+  margin: 0;
+}
+
+.info-window-body {
+  text-align: start;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  padding: auto;
+}
+
+.info-window-image {
+  padding-bottom: 10px;
+  width: 90px;
+  height: 95px;
+}
+
+.info-window-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.info-window-content {
+  padding: 0;
+  font-size: 17px;
+  font-weight: bolder;
+}
+
+.info-window-time-select {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #eee;
+  height: 25px;
+}
+
+.nav-button {
+  padding: 2px;
+  background-color: #eee;
+  color: black;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button:disabled {
+  color: #ccc;
+}
+
+.remove-container {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.remove-button {
+  padding: 5px 10px;
+  background-color: transparent;
+  color: gray;
+  border: none;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: gray;
+  color: black;
+}
+
+.nav-button:hover,
+.remove-button:hover {
+  opacity: 0.8;
+}
+
+.loading-icon {
+  font-style: italic;
+}
+
+.close-button {
+  float: right;
+  margin-top: 10px;
+  background-color: #fff;
+  border: 1px solid #000;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background-color: #000;
+  color: #fff;
+}
