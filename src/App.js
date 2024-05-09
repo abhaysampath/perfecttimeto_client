@@ -5,7 +5,7 @@ import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, WEATHER_PERIOD_LIMIT } from './cons
 import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { updatePlacesMap, loadWeatherForecast } from './utils';
+import { loadWeatherForecast, getDateKey, getPlacesKey } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
@@ -31,27 +31,38 @@ function App() {
     searchBoxRef.current = ref;
   };
   const onPlacesChanged = () => {
-    const places = searchBoxRef.current.getPlaces();
-    const bounds = new window.google.maps.LatLngBounds();
-    places?.forEach(place => {
+    const searchResults = searchBoxRef.current.getPlaces();
+    const mapBounds = new window.google.maps.LatLngBounds();
+    searchResults?.forEach(place => {
       if (place.geometry.viewport) {
-        bounds.union(place.geometry.viewport);
+        mapBounds.union(place.geometry.viewport);
       } else {
-        bounds.extend(place.geometry.location);
+        mapBounds.extend(place.geometry.location);
       }
     });
-    mapRef?.fitBounds(bounds);
+    mapRef?.fitBounds(mapBounds);
+  };
+  const updatePlacesMap = (placesMap, placesKey, mapKey, mapValue) => {
+    if (!placesMap.has(placesKey)) {
+      console.warn(`  WTF?? ${placesKey}`);
+      return;
+    }
+    const existingEntry = placesMap.get(placesKey);
+    placesMap.set(placesKey, {
+      ...existingEntry,
+      [mapKey]: mapValue,
+    });
   };
   const onMapClick = useCallback((e) => {
+    //Move this to a separate method that can be called for nearby places
     const newMarker = {
       id: new Date().toISOString(),
       position: e.latLng.toJSON(),
       key: `${e.latLng.lat()},${e.latLng.lng()}`
     };
     setMarkers((markers) => [...markers, newMarker]);
-    setPlacesCounter(placesCounter => placesCounter + 1);
+    setPlacesCounter((placesCounter) => placesCounter + 1);
     placesMap.set(newMarker.key, newMarker);
-    console.info(`    onMapClick PlacesMap: #${placesCounter} -> ${JSON.stringify(placesMap)}`);
     getGridXY(newMarker.position);
   }, []);
   const getGridXY = (position) => {
@@ -64,10 +75,9 @@ function App() {
         const gridX = nws_data.properties.gridX;
         const gridY = nws_data.properties.gridY;
         const forecast_office = nws_data.properties.cwa;
-        const key = `${position.lat},${position.lng}`;
-        addGridToPlacesMap(key, gridX, gridY, forecast_office);
-      })
-      .catch(error => {
+        const placesKey = getPlacesKey(position.lat, position.lng);
+        addGridToPlacesMap(placesKey, gridX, gridY, forecast_office);
+      }).catch(error => {
         console.error('Error fetching NWS data:', error);
       });
   };
@@ -80,53 +90,58 @@ function App() {
         gridY: gridY,
         forecast_office: forecast_office
       });
-      console.log(`      Updated entry in placesMap for ${key}`);
+      console.log(`      Updated entry in placesMap for ${key} -> ${JSON.stringify(placesMap)}`);
     } else {
       console.log(`      Entry not found in placesMap for ${key}`);
     }
-    console.info(`    addGridToPlacesMap PlacesMap: #${placesCounter} -> ${JSON.stringify(placesMap)}`);
-    getWeatherData(key, forecast_office, gridX, gridY);
+    getDayWeatherData(key, forecast_office, gridX, gridY);
+    getHourlyWeatherData(key, forecast_office, gridX, gridY);
   };
-  const getWeatherData = (key, forecast_office, gridX, gridY) => {
-    console.log(`  Getting Weather for  ${forecast_office}, ${gridX}, ${gridY}`);
+  const getDayWeatherData = (key, forecast_office, gridX, gridY) => {
     const nws_forecast_url =
       `https://api.weather.gov/gridpoints/${forecast_office}/${gridX},${gridY}/forecast`
     console.log(`  Calling URL: ${nws_forecast_url}`);
     axios.get(nws_forecast_url)
       .then(response => {
         const forecast_response = response.data;
-        updatePlacesMap(placesMap, key, "elevation", forecast_response.properties.elevation.value);
-        updatePlacesMap(placesMap, key, "elevationUnit", forecast_response.properties.elevation.unitCode);
+        updatePlacesMap(placesMap, key, "elevation", Math.floor(3.28084 * forecast_response.properties.elevation.value));
+        updatePlacesMap(placesMap, key, "elevationUnit", "ft");
         const periods = forecast_response.properties.periods;
-        let count = 0;
         periods.forEach((period) => {
-          if (count && count >= WEATHER_PERIOD_LIMIT) {
-            console.log(`****Only taking ${WEATHER_PERIOD_LIMIT} periods`);
-            return;
-          } else { count = count + 1; }
-          if (checkValidTimeOfDay(period.isDaytime, period.startTime, period.endTime) === false) {
-            console.log(`    Skipping nighttime: isDaytime: ${JSON.stringify(period.isDaytime)}`);
-            return;
-          }
-          const precipitation = period.probabilityOfPrecipitation.value
-          console.log(`      period.precipitation: ${precipitation}`);
-          // if (precipitation && checkPrecipitation(precipitation, weatherFilters.precipitationFilters)) {
-          //   console.log(`    Skipping rain: ${JSON.stringify(precipitation)}`);
-          //   return;
-          // }
-          // if (includeAfter)
-          console.log(`    NOT SKIPPING: ${JSON.stringify(period)}`);
-          addWeatherForecastToPlaces(key, period.startTime, period);
-          console.log(`**  Period: ${JSON.stringify(period.startTime)}`);
+          const dateKey = getDateKey(period.startTime, period.isDaytime);
+          addDailyForecastToPlaces(key, dateKey, period);
+        });
+      });
+  };
+  const getHourlyWeatherData = (key, forecast_office, gridX, gridY) => {
+    const nws_forecast_url =
+      `https://api.weather.gov/gridpoints/${forecast_office}/${gridX},${gridY}/forecast/hourly`
+    console.log(`  Calling URL: ${nws_forecast_url}`);
+    axios.get(nws_forecast_url)
+      .then(response => {
+        const forecast_response = response.data;
+        const periods = forecast_response.properties.periods;
+        periods.forEach((period) => {
+          addHourlyForecastToPlaces(key, period.startTime, period);
         });
         if (!placesMap.get(key).forecast || placesMap.get(key).forecast.length === 0) {
-          console.log(`No matching points, add first entry to show`);
-          addWeatherForecastToPlaces(key, periods[0].startTime, periods[0]);
+          //Add info for InfoWindow frame, move forecasts to window
+          addHourlyForecastToPlaces(key, periods[0].startTime, periods[0]);
         };
       });
   };
 
-  const addWeatherForecastToPlaces = (key, startTime, newForecast) => {
+  const addDailyForecastToPlaces = (placesKey, dateKey, newDaily) => {
+    const existingEntry = placesMap.get(placesKey);
+    let existingDailies = existingEntry.daily || [];
+    existingDailies.push(loadWeatherForecast(newDaily));
+    placesMap.set(placesKey, {
+      ...existingEntry,
+      daily: existingDailies
+    });
+  };
+
+  const addHourlyForecastToPlaces = (key, startTime, newForecast) => {
     if (!placesMap.has(key)) {
       console.warn(`  WTF?? ${newForecast}`);
       return;
@@ -138,17 +153,31 @@ function App() {
       ...existingEntry,
       forecast: existingForecasts
     });
-  }
+  };
 
   //Add Marker
   const onMarkerClick = useCallback((marker) => {
-    marker['forecast'] = placesMap.get(marker.key).forecast;
-    marker['elevation'] = placesMap.get(marker.key).elevation;
-    marker['elevationUnit'] = placesMap.get(marker.key).elevationUnit;
-    marker['isDaytime'] = placesMap.get(marker.key).isDaytime;
-    marker['current'] = placesMap.get(marker.key).forecast[0];
-    marker['num_forecasts'] = placesMap.get(marker.key).forecast.length;
+    console.log(`  Marker Click: ${JSON.stringify(marker)}`);
+    console.log(`  Marker Key: ${JSON.stringify(marker.key)}`);
+    const placesEntry = placesMap.get(marker.key);
+
+    if (!placesEntry || !placesEntry.forecast) {
+      console.info("Place not yet loaded, return doing nothing.");
+      return;
+    }
+    marker['forecast'] = placesEntry.forecast;
+    marker['daily'] = placesEntry.daily;
+    marker['elevation'] = placesEntry['elevation'];
+    marker['elevationUnit'] = placesEntry['elevationUnit'];
+    marker['isDaytime'] = placesEntry.isDaytime;
+    marker['num_forecasts'] = placesEntry.forecast.length;
+    const current = placesEntry.forecast[0];
+    const currentDaily = placesEntry.daily[0];
+    current['fullDesc'] = currentDaily.fullDesc;
+    current['timePeriod'] = currentDaily.timePeriod;
+    marker['current'] = current;
     marker['index'] = 1;
+      // TODO: Add summary panel with location data, and days/hours to scroll through
     setSelectedMarker(marker);
   }, []);
   const removeMarker = useCallback((id) => {
@@ -162,9 +191,14 @@ function App() {
     if (!selectedMarker || !selectedMarker.index) return;
     const newIndex = selectedMarker.index + direction;
     if (newIndex >= 0 && newIndex <= selectedMarker.forecast.length) {
+      const current = selectedMarker.forecast[newIndex - 1];
+      const currentDaily = selectedMarker.daily.filter(d => d.dateKey === current.dateKey ||
+        (d.startTime <= current.endTime && d.endTime >= current.startTime));
+      current.fullDesc = currentDaily.fullDesc;
+      current['timePeriod'] = currentDaily['timePeriod'];
       setSelectedMarker({
         ...selectedMarker,
-        current: selectedMarker.forecast[newIndex - 1],
+        current: current,
         index: newIndex
       });
     }
@@ -249,19 +283,19 @@ function App() {
                               <tbody>
                                 <tr>
                                   <td>Elevation: </td>
-                                  <td>{selectedMarker.current.elevation} {selectedMarker.current.elevationUnit}</td>
+                                  <td>{selectedMarker.elevation} {selectedMarker.elevationUnit}</td>
                                 </tr>
                                 <tr>
                                   <td>Temperature: </td>
-                                  <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} ({selectedMarker.current.trend})</td>
+                                  <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `( ${selectedMarker.current.trend} )` : ``}</td>
                                 </tr>
                                 <tr>
                                   <td>Precipitation: </td>
-                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit === 'wmoUnit:percent' ? '%' : selectedMarker.current.precipitationUnit}</td>
+                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
                                 </tr>
                                 <tr>
                                   <td>Rel. Humidity: </td>
-                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit === 'wmoUnit:percent' ? '%' : selectedMarker.current.relativeHumidityUnit}</td>
+                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
                                 </tr>
                                 <tr>
                                   <td>Wind Speed: </td>

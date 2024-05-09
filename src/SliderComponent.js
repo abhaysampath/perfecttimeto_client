@@ -19,7 +19,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
         const marks = [];
         for (let i = 0; i <= NUMBER_OF_DIVISIONS; i++) {
             let markValue = sliderMin + (i * Math.floor(range / NUMBER_OF_DIVISIONS));
-            if (markValue == bounds.lower || markValue == bounds.upper) {
+            if (markValue === bounds.lower || markValue === bounds.upper) {
                 marks.push({
                     value: markValue,
                     label: <Typography style={MARKS_LABEL_STYLE}>{markValue} {units}</Typography>
@@ -56,7 +56,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                         control={<Checkbox checked={isEnabled} onChange={handleCheckboxChange} />}
                         sx={{ marginRight: 0 }}
                         labelPlacement="end"
-                        FormControlLabelProps={{
+                        formcontrollabelprops={{
                             style: {
                                 color: isEnabled ? 'white' : 'gray',  // Example color change based on the enabled state
                                 fontSize: '1rem'                   // Set font size here
