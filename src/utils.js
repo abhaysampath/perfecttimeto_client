@@ -1,5 +1,13 @@
+import { CONVERT_METERS_TO_FEET, CONVERT_METERS_TO_MILES } from "./constants";
+
 export const getDateKey = (time, isDaytime) => {
     return new Date(time).toLocaleDateString('en-us');
+};
+export const getShortDate = (d) => {
+    return new Date(d).toLocaleDateString('en-us');
+};
+export const daysInFuture = (n = 0) => {
+    return new Date().setDate(new Date().getDate() + n);
 };
 export const getPlacesKey = (lat, lng) => {
     return `${lat},${lng}`;
@@ -38,18 +46,55 @@ export const parseConfig = (str) => {
     return filters;
 };
 export const getUnitString = (unitCode) => {
-    // if (unitCode.includes("degF")) {
-    //     return "\u00B0F";
-    // } else if (unitCode.includes("degC")) {
-    //     return "\u00B0C";
-    // }
+    if (!unitCode) { return unitCode; }
+    if (unitCode.includes("degF")) {
+        return "\u00B0F";
+    } else if (unitCode.includes("degC")) {
+        return "\u00B0C";
+    }
     if (unitCode === "wmoUnit:m") {
         return "meters";
     } else if (unitCode === "wmoUnit:percent") {
         return "%";
+    };
+    return unitCode.replaceAll("wmoUnit:", "");
+};
+export const convertFromMeters = (value, origUnits) => {
+    if (origUnits === "meters" || origUnits === "wmoUnit:m") {
+        if (value > 2000) {
+            value = (CONVERT_METERS_TO_MILES * value).toPrecision(2);
+            origUnits = "miles";
+        } else {
+            value = (CONVERT_METERS_TO_FEET * value).toPrecision(2);
+            origUnits = "feet";
+        }
     }
-    return unitCode?.replaceAll("wmoUnit:", "");
+    return [value, getUnitString(origUnits)];
+};
+export const loadNWSData = (nws_data) => {
+    let [distance, distanceUnit] = convertFromMeters(
+        nws_data.properties.relativeLocation.properties.distance.value,
+        nws_data.properties.relativeLocation.properties.distance.unitCode);
+    console.log(`  parsed distance to: ${distance} ${distanceUnit}`)
+    // Add "bearing":{"unitCode":"wmoUnit:degree_(angle)","value":152}
+    return {
+        gridX: nws_data.properties.gridX,
+        gridY: nws_data.properties.gridY,
+        forecastOffice: nws_data.properties.cwa,
+        city: nws_data.properties.relativeLocation.properties.city,
+        state: nws_data.properties.relativeLocation.properties.state,
+        distanceUnit: distanceUnit,
+        distance: distance,
+    };
 }
+export const printMap = (myMap, name = '') => {
+    for (let [k, f] of [Object.entries(...myMap)]) {
+      console.log(` pring keys map in ${name}- ${JSON.stringify(k[1])}-> ${JSON.stringify(f[1])}`);
+      // for (let [a, b] of [Object.entries(f[0])]) {
+      //   console.log(`    ${name}-ik- ${JSON.stringify(b)}`);//-> ${JSON.stringify(Object(b))}`); ${JSON.stringify(a)}
+      // }
+    }
+  }
 export const loadWeatherForecast = (forecast) => {
     return {
         timePeriod: forecast.name,
@@ -62,6 +107,7 @@ export const loadWeatherForecast = (forecast) => {
         dateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { weekday: "short", year: "numeric", month: "short", day: "numeric" }),
         startTimeStr: new Date(forecast.startTime).toLocaleTimeString(),
         endTimeStr: new Date(forecast.endTime).toLocaleTimeString(),
+        shortDate: getShortDate(forecast.startTime),
         timeRangeStr: (new Date(forecast.startTime).toLocaleTimeString() + "-" + new Date(forecast.endTime).toLocaleTimeString()).replaceAll(":00:00 ", ""),
         dateKey: getDateKey(forecast.startTime, forecast.isDaytime),
         precipitation: forecast.probabilityOfPrecipitation.value,
