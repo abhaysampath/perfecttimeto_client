@@ -1,3 +1,9 @@
+export const getDateKey = (time, isDaytime) => {
+    return new Date(time).toLocaleDateString('en-us');
+};
+export const getPlacesKey = (lat, lng) => {
+    return `${lat},${lng}`;
+};
 export const dateCompare = (periodTime, filterTimeBound) => {
     if (periodTime.getHours() === filterTimeBound.hours) {
         if (periodTime.getMinutes() === filterTimeBound.minutes) {
@@ -31,6 +37,19 @@ export const parseConfig = (str) => {
     }
     return filters;
 };
+export const getUnitString = (unitCode) => {
+    // if (unitCode.includes("degF")) {
+    //     return "\u00B0F";
+    // } else if (unitCode.includes("degC")) {
+    //     return "\u00B0C";
+    // }
+    if (unitCode === "wmoUnit:m") {
+        return "meters";
+    } else if (unitCode === "wmoUnit:percent") {
+        return "%";
+    }
+    return unitCode?.replaceAll("wmoUnit:", "");
+}
 export const loadWeatherForecast = (forecast) => {
     return {
         timePeriod: forecast.name,
@@ -38,19 +57,19 @@ export const loadWeatherForecast = (forecast) => {
         temp: forecast.temperature,
         tempUnit: forecast.temperatureUnit,
         elevation: forecast.elevation,
-        elevationUnit: forecast.elevationUnit,
+        elevationUnit: getUnitString(forecast.elevationUnit),
         date: new Date(forecast.startTime).toDateString(),
         dateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { weekday: "short", year: "numeric", month: "short", day: "numeric" }),
         startTimeStr: new Date(forecast.startTime).toLocaleTimeString(),
         endTimeStr: new Date(forecast.endTime).toLocaleTimeString(),
         timeRangeStr: (new Date(forecast.startTime).toLocaleTimeString() + "-" + new Date(forecast.endTime).toLocaleTimeString()).replaceAll(":00:00 ", ""),
-        shortDateStr: new Date(forecast.startTime).toLocaleDateString('en-us', { year: "numeric", month: "short", day: "numeric" }),
+        dateKey: getDateKey(forecast.startTime, forecast.isDaytime),
         precipitation: forecast.probabilityOfPrecipitation.value,
-        precipitationUnit: forecast.probabilityOfPrecipitation.unitCode,
+        precipitationUnit: getUnitString(forecast.probabilityOfPrecipitation.unitCode),
         dewpoint: forecast.dewpoint.value,
         dewpointUnit: forecast.dewpoint.unitCode,
         relativeHumidity: forecast.relativeHumidity.value,
-        relativeHumidityUnit: forecast.relativeHumidity.unitCode,
+        relativeHumidityUnit: getUnitString(forecast.relativeHumidity.unitCode),
         startTime: new Date(forecast.startTime),
         endTime: new Date(forecast.endTime),
         windSpeed: forecast.windSpeed,
@@ -60,15 +79,4 @@ export const loadWeatherForecast = (forecast) => {
         fullDesc: forecast.detailedForecast,
         weatherIcon: forecast.icon,
     }
-};
-export const updatePlacesMap = (placesMap, placesKey, mapKey, mapValue) => {
-    if (!placesMap.has(placesKey)) {
-        console.warn(`  WTF?? ${placesKey}`);
-        return;
-    }
-    const existingEntry = placesMap.get(placesKey);
-    placesMap.set(placesKey, {
-        ...existingEntry,
-        [mapKey]: mapValue,
-    });
 };
