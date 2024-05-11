@@ -27,7 +27,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
             } else {
                 marks.push({
                     value: markValue,
-                    label: <Typography style={MARKS_LABEL_STYLE}>{markValue}</Typography>//, markValue
+                    label: <Typography style={MARKS_LABEL_STYLE}>{markValue}</Typography>
                 });
             }
         };
@@ -53,13 +53,13 @@ const SliderComponent = ({ name, bounds, units, init }) => {
             <label className='slider-top-row'>
                 <div>
                     <FormControlLabel
-                        control={<Checkbox checked={isEnabled} onChange={handleCheckboxChange} />}
+                        control={<Checkbox id={filterName + "-checkbox"} checked={isEnabled} onChange={handleCheckboxChange} />}
                         sx={{ marginRight: 0 }}
                         labelPlacement="end"
                         formcontrollabelprops={{
                             style: {
-                                color: isEnabled ? 'white' : 'gray',  // Example color change based on the enabled state
-                                fontSize: '1rem'                   // Set font size here
+                                color: isEnabled ? 'white' : 'gray',
+                                fontSize: '1rem'
                             }
                         }}
                     />
@@ -70,7 +70,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                 {isEnabled && (
                     <>
                         <div className="slider-values">
-                            <MuiInput className="input-container"
+                            <MuiInput id={filterName + "-input-lower"} className="input-container"
                                 value={sliderValue[0]}
                                 size="small"
                                 onChange={handleLowerInputChange}
@@ -78,10 +78,10 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                                     min: { sliderMin },
                                     max: { sliderMax },
                                     step: steps,
-                                    type: 'number', 'aria-labelledby': 'input-slider',
+                                    type: 'number', 'attr.aria-labelledby': {filterName} + "-input-upper"
                                 }}
                             /><div className="slider-units"> - </div>
-                            <MuiInput className="input-container"
+                            <MuiInput id={filterName + "-input-upper"} className="input-container"
                                 value={sliderValue[1]}
                                 size="small"
                                 onChange={handleUpperInputChange}
@@ -89,7 +89,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                                     min: { sliderMin },
                                     max: { sliderMax },
                                     step: steps,
-                                    type: 'number', 'aria-labelledby': 'input-slider',
+                                    type: 'number', 'attr.aria-labelledby': {filterName} + "-input-upper"
                                 }}
                             />
                             <div className="slider-units">

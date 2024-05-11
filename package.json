@@ -6,7 +6,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
     "@mui/icons-material": "^5.15.16",
-    "@mui/material": "^5.15.16",
+    "@mui/material": "^5.15.17",
     "@react-google-maps/api": "^2.19.3",
     "@types/googlemaps": "^3.43.3",
     "axios": "^1.6.8",

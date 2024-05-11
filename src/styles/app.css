@@ -1,6 +1,6 @@
 .App {
   text-align: start;
-  display: fill;
+  display: stretch;
   height: 100vh;
   width: 100vw;
 }
