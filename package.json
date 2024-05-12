@@ -8,7 +8,9 @@
     "@mui/icons-material": "^5.15.16",
     "@mui/material": "^5.15.17",
     "@react-google-maps/api": "^2.19.3",
+    "@testing-library/jest-dom": "^6.4.5",
     "@types/googlemaps": "^3.43.3",
+    "@types/jsdom": "^21.1.6",
     "axios": "^1.6.8",
     "google-maps": "^4.3.3",
     "react": "^19.0.0-beta-94eed63c49-20240425",
@@ -19,7 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@toolz/allow-react)/\" --env=jsdom",
     "eject": "react-scripts eject"
   },
   "engines": {
@@ -44,6 +46,15 @@
     ]
   },
   "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11"
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/preset-env": "^7.24.5",
+    "@babel/preset-react": "^7.24.1",
+    "@babel/register": "^7.23.7",
+    "@testing-library/react": "^15.0.7",
+    "chai": "^5.1.1",
+    "chai-dom": "^1.12.0",
+    "jsdom": "^24.0.0",
+    "jsdom-global": "^3.0.2",
+    "mocha": "^10.4.0"
   }
 }
