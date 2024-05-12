@@ -5,7 +5,7 @@ import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, WEATHER_PERIOD_LIMIT, SHOW_FILTERS_
 import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { loadWeatherForecast, getDateKey, getPlacesKey, getUnitString, loadNWSData, getShortDate, daysInFuture, printMap } from './utils';
+import { loadWeatherForecast, getPlacesKey, getUnitString, loadNWSData, getShortDate, daysInFuture, printMap } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
@@ -15,7 +15,7 @@ import axios from 'axios';
 
 function App() {
   const [mapRef, setMapRef] = useState(null);
-  const [activity, setActivity] = useState("fly a kite");
+  const [activity] = useState("fly a kite");
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const searchBoxRef = useRef(null);
@@ -136,6 +136,7 @@ function App() {
     printMap(forecastsMap, 'onMapClick');
     getGridXY(newMarker);
     // onMarkerClick(newMarker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   useEffect(() => {
     console.log(`Markers updated: ${JSON.stringify(markers)}`);
@@ -144,7 +145,7 @@ function App() {
   const filterForecastsByDate = (forecasts, markerDateStr) => {
     if (forecasts === undefined) { console.error(`  Empty forecasts map: ${forecasts}`) }
     let filteredForecasts = [];
-    forecasts.forEach((val) => {
+    forecasts?.forEach((val) => {
       Object.values(val).forEach((value, key) => {
         if (value["shortDate"] === markerDateStr) {
           filteredForecasts = [...filteredForecasts, value]
@@ -179,6 +180,7 @@ function App() {
     // console.log(`  FILTERED hourlies : ${JSON.stringify(marker['hourlies'])}`);
     marker['num_forecasts'] = 6; //place["daily"]?.length;
     setSelectedMarker(marker);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const removeMarker = useCallback((id) => {
     setMarkers((markers) => markers.filter(m => m.id !== id));
@@ -280,7 +282,7 @@ function App() {
                         <button className="nav-button" onClick={() => navigateDailyForecast(-1)} disabled={selectedMarker.dateIndex === 0}>
                           {"<<  "}</button>
                         <h4 className="info-window-title">
-                          {selectedMarker.current.dateStr}  {selectedMarker.current.timeRangeStr}   ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_forecasts} )</h4>
+                          {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}   ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_forecasts} )</h4>
                         <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={selectedMarker.dateIndex === selectedMarker.num_forecasts}>
                           {"  >>"}</button>
                       </div>
