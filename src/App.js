@@ -235,14 +235,23 @@ function App() {
       // re-trigger missing info? getGridXY(format(marker) );
       return;
     }
+    console.log(`  place daily: ${JSON.stringify(place['daily'])}`);
     marker['uniqueDates'] = getUniqueShortDates(place['daily']);
+    console.log(`  place unique dates: (${JSON.stringify(marker['uniqueDates'].length)}) ${JSON.stringify(marker['uniqueDates'])}`);
     marker['location'] = place["location"];
+    console.log(` MARKER  nwsData : ${JSON.stringify(marker['location'])}`);
     //This part will change by date, Move to separate method
     const markerDateStr = marker['uniqueDates'][marker['dateIndex']];
+    // getShortDate(daysInFuture(marker['dateIndex']));
     marker['markerDate'] = markerDateStr;
+    console.log(`  markerDate : ${marker['markerDate']}`);
     marker['daily'] = place["daily"];
     marker['hourly'] = place["hourly"];
     marker['current'] = filterForecastsByDate(place["daily"], markerDateStr)[0]; //0 for daytime, update to get based on hour
+    console.log(`  FILTERED current : ${JSON.stringify(marker['current'])}`);
+    console.log(` checkAllFilters ${JSON.stringify(checkAllFilters(marker['current']))}`);
+    // marker['hourlies'] = filterForecastsByDate(place["hourly"], markerDateStr);
+    // console.log(`  FILTERED hourlies by date : ${JSON.stringify(marker['hourlies'])}`);
     marker['num_dailies'] = marker['uniqueDates'].length;
     setSelectedMarker(marker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
