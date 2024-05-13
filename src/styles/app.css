@@ -71,6 +71,20 @@
   align-items: center;
 }
 
+.info-window-status {
+  font-size: 18px;
+  font-family: 'Montserrat';
+  padding: 2px;
+  margin: 15px;
+  margin-right: 45px;
+  margin-left: 45px;
+  width: fill;
+  text-align: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+
 .info-window {
   color: black;
   font-size: 14px;
