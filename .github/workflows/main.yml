@@ -40,11 +40,10 @@ jobs:
     - name: Deploy to GitHub Pages
       run: yarn deploy-gh-pages
       env:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
     - name: Deploy to www.perfecttimeto.com
       run: yarn deploy-www
       env:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
