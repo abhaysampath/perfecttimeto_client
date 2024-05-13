@@ -13,6 +13,7 @@ import axios from 'axios';
 import SliderComponent from './SliderComponent';
 // import { checkValidTimeOfDay, checkTemperature, checkWindSpeed, checkPrecipitation } from './Filters';
 
+
 function App() {
   const [mapRef, setMapRef] = useState(null);
   const [activity] = useState("fly a kite");
