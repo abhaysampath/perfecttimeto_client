@@ -37,8 +37,5 @@ jobs:
     - name: Run tests
       run: yarn test
 
-    - name: Deploy to GitHub Pages
-      run: yarn deploy-gh-pages
-
     - name: Deploy to www.perfecttimeto.com
       run: yarn deploy-www
