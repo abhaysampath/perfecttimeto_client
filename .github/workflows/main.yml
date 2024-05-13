@@ -39,8 +39,8 @@ jobs:
 
     - name: Configure Git identity
       run: |
-        git config --global user.email ${{ USER_EMAIL }}
-        git config --global user.name ${{ USER_NAME }}
+        git config --global user.email ${{ variables.USER_EMAIL }}
+        git config --global user.name ${{ variables.USER_NAME }}
 
     - name: Deploy to GitHub Pages
       run: yarn deploy-gh-pages
