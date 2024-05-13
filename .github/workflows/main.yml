@@ -23,6 +23,8 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'yarn'
 
+    - run: echo "Repo ${{ github.repository }} has been cloned to the runner."
+
     - name: Install dependencies
       run: yarn install --frozen-lockfile
 
