@@ -1,11 +1,11 @@
 import './styles/app.css';
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, WEATHER_PERIOD_LIMIT, SHOW_FILTERS_ON_LOAD } from './constants';
+import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SHOW_FILTERS_ON_LOAD } from './constants';
 import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { loadWeatherForecast, getPlacesKey, getUnitString, loadNWSData, getShortDate, daysInFuture, printMap } from './utils';
+import { loadWeatherForecast, getPlacesKey, getUnitString, loadNWSData } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
@@ -19,6 +19,7 @@ function App() {
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const searchBoxRef = useRef(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   let forecastsMap = new Map(); // { lat,lng } => { daily:{}, hourly:{}, location:{} }
   const [placesCounter, setPlacesCounter] = useState(0);
   const [showFilters, setShowFilters] = useState(SHOW_FILTERS_ON_LOAD);
@@ -143,7 +144,6 @@ function App() {
     setMarkers(currentMarkers => [...currentMarkers, { ...newMarker }]);
     setPlacesCounter(placesCounter => placesCounter + 1);
     forecastsMap.set(placeKey, newMarker);
-    printMap(forecastsMap, 'onMapClick');
     getGridXY(newMarker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

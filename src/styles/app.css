@@ -78,7 +78,7 @@
   margin: 15px;
   margin-right: 45px;
   margin-left: 45px;
-  width: fill;
+  width: stretch;
   text-align: center;
   align-items: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
