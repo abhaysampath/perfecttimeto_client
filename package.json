@@ -2,6 +2,7 @@
   "name": "perfecttimeto_client",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://www.perfecttimeto.com/",
   "dependencies": {
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
@@ -22,7 +23,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@toolz/allow-react)/\" --env=jsdom",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "predeploy": "npm run build",
+    "deploy": "npm run deploy-gh-pages && npm run deploy-custom-domain",
+    "deploy-gh-pages": "gh-pages -d build",
+    "deploy-www": "gh-pages -d build --dest www"
   },
   "engines": {
     "node": ">=16.0.0"
@@ -53,6 +58,7 @@
     "@testing-library/react": "^15.0.7",
     "chai": "^5.1.1",
     "chai-dom": "^1.12.0",
+    "gh-pages": "^6.1.1",
     "jsdom": "^24.0.0",
     "jsdom-global": "^3.0.2",
     "mocha": "^10.4.0"
