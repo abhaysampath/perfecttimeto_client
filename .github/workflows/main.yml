@@ -39,11 +39,13 @@ jobs:
 
     - name: Configure Git identity
       run: |
-        git config user.email "abhaysampath@gmail.com"
-        git config user.name "Abhay Sampath"
+        git config user.email ${{ vars.USER_EMAIL }}
+        git config user.name ${{ vars.USER_NAME }}
 
     - name: Deploy to GitHub Pages
       run: yarn deploy-gh-pages
+      env: 
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Deploy to www.perfecttimeto.com
       run: yarn deploy-www
