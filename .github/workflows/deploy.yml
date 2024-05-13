@@ -43,6 +43,18 @@ jobs:
         git config user.name ${{ vars.USER_NAME }}
 
     - name: Deploy to www.perfecttimeto.com
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        deploy_key: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build
+
+    - name: Deploy to GitHub Pages
+      run: yarn deploy-gh-pages
+      env:
+        deploy_key: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./build
+        
+    - name: Deploy to www.perfecttimeto.com
       run: yarn deploy-www
       env:
         deploy_key: ${{ secrets.GITHUB_TOKEN }}
