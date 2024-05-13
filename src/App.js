@@ -9,8 +9,8 @@ import { loadWeatherForecast, getPlacesKey, getUnitString, loadNWSData, getShort
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
-import { FiltersPanel } from './FiltersPanel';
 import axios from 'axios';
+import SliderComponent from './SliderComponent';
 // import { checkValidTimeOfDay, checkTemperature, checkWindSpeed, checkPrecipitation } from './Filters';
 
 function App() {
@@ -22,7 +22,29 @@ function App() {
   let forecastsMap = new Map(); // { lat,lng } => { daily:{}, hourly:{}, location:{} }
   const [placesCounter, setPlacesCounter] = useState(0);
   const [showFilters, setShowFilters] = useState(SHOW_FILTERS_ON_LOAD);
+  const [sliderStates, setSliderStates] = useState(
+    INIT_FILTER_CONFIG.map(filter => ({
+      name: filter.name,
+      bounds: filter.bounds,
+      units: filter.units,
+      init: filter.init,
+      sliderValue: [filter.init.lower, filter.init.upper],
+      isEnabled: true
+    }))
+  );
+  const handleSliderChange = (index, newValue) => {
+    const updatedSliderStates = [...sliderStates];
+    updatedSliderStates[index].sliderValue = newValue;
+    setSliderStates(updatedSliderStates);
+  };
 
+  useEffect(() => {
+    console.log(`Markers updated: ${JSON.stringify(markers)}`);
+  }, [markers]);
+  useEffect(() => {
+    console.log(`APP sliderStates updated: ${JSON.stringify(sliderStates)}`);
+    console.log(` forecastsMap?: ${JSON.stringify(forecastsMap)}`);
+  }, [sliderStates, forecastsMap]);
   const onLoad = (ref) => {
     setMapRef(ref);
   };
@@ -105,7 +127,7 @@ function App() {
           elevationUnit: getUnitString(response.data.properties.elevation.unitCode)
         })
         let data = [], count = response.data.properties.periods.length;
-        for (let i = 0; (i < WEATHER_PERIOD_LIMIT && i < count - 1); i++) {
+        for (let i = 0; i < count - 1; i++) {
           const weatherData = loadWeatherForecast(response.data.properties.periods[i]);
           data.push(weatherData);  //TODO: Don't load nulls
         };
@@ -154,6 +176,53 @@ function App() {
     });
     return filteredForecasts;
   };
+  const getUniqueShortDates = (input) => {
+    const uniqueDates = new Set();
+    input.forEach((obj) => {
+      Object.values(obj).forEach((value) => {
+        uniqueDates.add(value.shortDate)
+      })
+    });
+    return Array.from(uniqueDates);
+  };
+  //Apply Weather Filters
+  const checkAllFilters = (forecast) => {
+    console.log(`SliderProvider   sliderStates?  ${JSON.stringify(sliderStates)}   check?  ${forecast}`);
+    if (forecast === undefined) { console.error(`  Empty forecasts map: ${forecast}`); return; }
+    for (const slider of sliderStates) {
+      if (!slider.isEnabled) { console.log(`Disabled ${slider.name}`); continue; }
+      switch (slider.name) {
+        case "Temperature":
+          if (forecast["temp"] && !isWithinSliderRange(slider, forecast["temp"])) {
+            return false;
+          }
+          break;
+        case "Wind Speed":
+          if (forecast["windSpeed"] && !isWithinSliderRange(slider, forecast["windSpeed"])) {
+            return false;
+          }
+          break;
+        case "Precipitation":
+          if (forecast["precipitation"] && !isWithinSliderRange(slider, forecast["precipitation"])) {
+            return false;
+          }
+          break;
+        default:
+          console.error(`Unknown slider.name, skipping: ${JSON.stringify(slider.name)} ${JSON.stringify(slider)}`);
+          break;
+      }
+    }
+    return true;
+  };
+  const isWithinSliderRange = (sliderStates, forecastValue) => {
+    console.log(` ${sliderStates.name} ${forecastValue}<${sliderStates.sliderValue[0]} || ${forecastValue}<${sliderStates.sliderValue[1]}`);
+    if (forecastValue < sliderStates.sliderValue[0] || forecastValue > sliderStates.sliderValue[1]) {
+      console.error(` EXCLUDE: ${sliderStates.name}  ${forecastValue} NOT in ${JSON.stringify(sliderStates.sliderValue)} `);
+      return false;
+    }
+    console.warn(` INCLUDE: ${sliderStates.name}  ${forecastValue} in ${JSON.stringify(sliderStates.sliderValue)} `);
+    return true;
+  };
   //Show InfoWindow, populate with data
   const onMarkerClick = useCallback((marker) => {
     console.log(`  Marker placeKey: ${marker['placeKey']}`);
@@ -161,24 +230,20 @@ function App() {
     console.log(`  Date INDEX : ${JSON.stringify(marker['dateIndex'])}`);
 
     let place = forecastsMap.get(marker['placeKey']);
-    if (!place || place === undefined) {
+    if (!place || place === undefined || place['daily'] === undefined) {
       console.error("Place not yet loaded, return doing nothing.");
       // re-trigger missing info? getGridXY(format(marker) );
       return;
     }
+    marker['uniqueDates'] = getUniqueShortDates(place['daily']);
     marker['location'] = place["location"];
-    console.log(` MARKER  nwsData : ${JSON.stringify(marker['location'])}`);
     //This part will change by date, Move to separate method
-    const markerDateStr = getShortDate(daysInFuture(marker['dateIndex']));
+    const markerDateStr = marker['uniqueDates'][marker['dateIndex']];
     marker['markerDate'] = markerDateStr;
-    console.log(`  markerDate : ${marker['markerDate']}`);
     marker['daily'] = place["daily"];
     marker['hourly'] = place["hourly"];
     marker['current'] = filterForecastsByDate(place["daily"], markerDateStr)[0]; //0 for daytime, update to get based on hour
-    // console.log(`  FILTERED current : ${JSON.stringify(marker['current'])}`);
-    // marker['hourlies'] = filterForecastsByDate(place["hourly"], markerDateStr);
-    // console.log(`  FILTERED hourlies : ${JSON.stringify(marker['hourlies'])}`);
-    marker['num_forecasts'] = 6; //place["daily"]?.length;
+    marker['num_dailies'] = marker['uniqueDates'].length;
     setSelectedMarker(marker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -191,10 +256,8 @@ function App() {
   }, []);
   const navigateDailyForecast = (direction) => {
     console.log(`  read selectedMarker ${JSON.stringify(selectedMarker.dateIndex)}`);
-    // if (!selectedMarker || !selectedMarker.dateIndex) return;
     const newIndex = selectedMarker.dateIndex + direction;
-    console.log(`  nI ${newIndex}  = sMi ${selectedMarker.dateIndex} + d ${direction}`);
-    if (newIndex >= 0 && newIndex <= selectedMarker.num_forecasts) {
+    if (newIndex >= 0 && newIndex < selectedMarker.num_dailies) {
       const markerDateStr = getShortDate(daysInFuture(newIndex));
       const current = filterForecastsByDate(selectedMarker["daily"], markerDateStr)[0]; //0 for daytime, update to get based on hour
       current['markerDate'] = markerDateStr;
@@ -204,8 +267,8 @@ function App() {
       // console.log(`  FILTERED hourlies : ${JSON.stringify(selectedMarker['hourlies'])}`);
       // current['currentHourly'] = selectedMarker['hourlies'][0];
       // console.log(`  currentHourly : ${JSON.stringify(selectedMarker['currentHourly'])}`);
-      current['num_forecasts'] = selectedMarker["hourlies"]?.length;
-      console.log(`  MARKER num_forecasts : ${JSON.stringify(selectedMarker['num_forecasts'])}`);
+      current['num_hourlies'] = selectedMarker["hourlies"]?.length;
+      console.log(`  MARKER num_hourlies : ${JSON.stringify(selectedMarker['num_hourlies'])}`);
       setSelectedMarker({
         ...selectedMarker,
         current: current,
@@ -281,9 +344,9 @@ function App() {
                       <div className='info-window-time-select'>
                         <button className="nav-button" onClick={() => navigateDailyForecast(-1)} disabled={selectedMarker.dateIndex === 0}>
                           {"<<  "}</button>
-                        <h4 className="info-window-title">
-                          {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}   ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_forecasts} )</h4>
-                        <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={selectedMarker.dateIndex === selectedMarker.num_forecasts}>
+                        {selectedMarker.current && <h4 className="info-window-title">
+                          {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}   ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_dailies} )</h4>}
+                        <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={!selectedMarker.current || (selectedMarker.dateIndex === selectedMarker.num_dailies)}>
                           {"  >>"}</button>
                       </div>
                       <h2 padding="0">{selectedMarker.current.timePeriod}: {selectedMarker.current.desc}</h2>
@@ -331,7 +394,15 @@ function App() {
         </LoadScript>
       </main>
       {showFilters && (
-        <FiltersPanel filters={INIT_FILTER_CONFIG} />
+        <div className="filters-panel">
+          {sliderStates.map((slider, index) => {
+            return <SliderComponent
+              key={index}
+              index={index}
+              slider={slider}
+              onSliderChange={handleSliderChange} />
+          })}
+        </div>
       )}
     </div>
   );

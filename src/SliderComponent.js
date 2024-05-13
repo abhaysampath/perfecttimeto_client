@@ -1,15 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Slider from '@mui/material/Slider';
 import MuiInput from '@mui/material/Input';
 import { Typography, Checkbox, FormControlLabel, Box } from '@mui/material';
 import './styles/filters.css';
 
-const SliderComponent = ({ name, bounds, units, init }) => {
-    const [sliderValue, setSliderValue] = useState([init.lower, init.upper]);
-    const [isEnabled, setIsEnabled] = useState(true);
-    const sliderMin = bounds.lower;
-    const sliderMax = bounds.upper;
-    const range = sliderMax - sliderMin;
+export const SliderComponent = ({ index, slider, onSliderChange }) => {
+    const { name, bounds, units, sliderValue, isEnabled } = slider;
+    const range = bounds.upper - bounds.lower;
     const filterName = name;
     const steps = range > 65 ? 5 : 1;
     const MARKS_LABEL_COLOR = "white";
@@ -18,7 +15,7 @@ const SliderComponent = ({ name, bounds, units, init }) => {
         const NUMBER_OF_DIVISIONS = 5
         const marks = [];
         for (let i = 0; i <= NUMBER_OF_DIVISIONS; i++) {
-            let markValue = sliderMin + (i * Math.floor(range / NUMBER_OF_DIVISIONS));
+            let markValue = bounds.lower + (i * Math.floor(range / NUMBER_OF_DIVISIONS));
             if (markValue === bounds.lower || markValue === bounds.upper) {
                 marks.push({
                     value: markValue,
@@ -34,19 +31,19 @@ const SliderComponent = ({ name, bounds, units, init }) => {
         return marks;
     }
     const handleSliderChange = (event, newValue) => {
-        setSliderValue(newValue);
+        onSliderChange(index, newValue);
     };
-    const handleLowerInputChange = (event) => {
-        setSliderValue(sliderValue => ([event.target.value, sliderValue[1]]));
-    };
-    const handleUpperInputChange = (event) => {
-        setSliderValue(sliderValue => ([sliderValue[0], event.target.value]));
+    const handleInputChange = (event, newIndex) => {
+        const value = parseInt(event.target.value, 10);
+        const newSliderValue = newIndex === 0 ? [value, slider.sliderValue[1]] : [slider.sliderValue[0], value];
+        onSliderChange(index, newSliderValue);
     };
     const handleComponentClick = () => {
-        if (!isEnabled) setIsEnabled(true);
+        if (!slider.isEnabled)
+            onSliderChange(index, { ...slider, isEnabled: !slider.isEnabled });
     };
     const handleCheckboxChange = (event) => {
-        setIsEnabled(event.target.checked);
+        onSliderChange(index, { ...slider, isEnabled: event.target.checked });
     };
     return (
         <Box className="slider-container" onClick={handleComponentClick} sx={{ opacity: isEnabled ? 1 : 0.7, color: isEnabled ? 'inherit' : 'gray' }}>
@@ -73,23 +70,23 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                             <MuiInput id={filterName + "-input-lower"} className="input-container"
                                 value={sliderValue[0]}
                                 size="small"
-                                onChange={handleLowerInputChange}
+                                onChange={(event) => handleInputChange(event, 0)}
                                 inputProps={{
-                                    min: { sliderMin },
-                                    max: { sliderMax },
+                                    min: (bounds.lower),
+                                    max: (bounds.upper),
                                     step: steps,
-                                    type: 'number', 'attr.aria-labelledby': {filterName} + "-input-upper"
+                                    type: 'number', 'attr.aria-labelledby': { filterName } + "-input-upper"
                                 }}
                             /><div className="slider-units"> - </div>
                             <MuiInput id={filterName + "-input-upper"} className="input-container"
                                 value={sliderValue[1]}
                                 size="small"
-                                onChange={handleUpperInputChange}
+                                onChange={(event) => handleInputChange(event, 1)}
                                 inputProps={{
-                                    min: { sliderMin },
-                                    max: { sliderMax },
+                                    min: (bounds.lower),
+                                    max: (bounds.upper),
                                     step: steps,
-                                    type: 'number', 'attr.aria-labelledby': {filterName} + "-input-upper"
+                                    type: 'number', 'attr.aria-labelledby': { filterName } + "-input-upper"
                                 }}
                             />
                             <div className="slider-units">
@@ -104,11 +101,11 @@ const SliderComponent = ({ name, bounds, units, init }) => {
                     <div className="slider-slider">
                         <Slider color='black'
                             disabled={!isEnabled}
-                            value={sliderValue}
+                            value={slider.sliderValue}
                             onChange={handleSliderChange}
                             valueLabelDisplay="auto"
-                            min={sliderMin}
-                            max={sliderMax}
+                            min={bounds.lower}
+                            max={bounds.upper}
                             marks={getMarks()}
                             step={steps}
                             size='large'
