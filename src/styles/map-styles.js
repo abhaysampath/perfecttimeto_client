@@ -2,7 +2,7 @@ export const INITIAL_MAP_CENTER = {
     lat: 40.7128,
     lng: -74.0060
 };
-export const DEFAULT_MAP_TYPE = 'SATELLITE';
+export const DEFAULT_MAP_TYPE = 'terrain';
 export const INITIAL_MAP_OPTIONS = {
     center: { INITIAL_MAP_CENTER },
     zoom: 12,
@@ -10,7 +10,7 @@ export const INITIAL_MAP_OPTIONS = {
 };
 export const MAP_CONTAINER_STYLE = {
     width: '100vw',
-    height: '93vh'
+    height: '95vh'
 };
 export const MAP_PARKS_STYLE = [{
         featureType: "poi.park",

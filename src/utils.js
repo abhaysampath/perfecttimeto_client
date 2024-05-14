@@ -53,7 +53,7 @@ export const getUnitString = (unitCode) => {
         return "\u00B0C";
     }
     if (unitCode === "wmoUnit:m") {
-        return "meters";
+        return "m";
     } else if (unitCode === "wmoUnit:percent") {
         return "%";
     };
@@ -62,11 +62,11 @@ export const getUnitString = (unitCode) => {
 export const convertFromMeters = (value, origUnits) => {
     if (origUnits === "meters" || origUnits === "wmoUnit:m") {
         if (value > 2000) {
-            value = (CONVERT_METERS_TO_MILES * value).toPrecision(2);
+            value = (CONVERT_METERS_TO_MILES * value).toFixed();
             origUnits = "miles";
         } else {
-            value = (CONVERT_METERS_TO_FEET * value).toPrecision(2);
-            origUnits = "feet";
+            value = (CONVERT_METERS_TO_FEET * value).toFixed()
+            origUnits = "ft";
         }
     }
     return [value, getUnitString(origUnits)];

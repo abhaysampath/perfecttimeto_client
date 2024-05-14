@@ -5,7 +5,7 @@ import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SHOW_FILTERS_ON_LOAD } from './cons
 import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { loadWeatherForecast, getPlacesKey, getUnitString, loadNWSData } from './utils';
+import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
 import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
@@ -112,10 +112,10 @@ function App() {
       + (timePeriod === 'hourly' ? `hourly` : ``);
     axios.get(nws_forecast_url)
       .then(response => {
-        addToForecastsMap(placeKey, "location", {
-          elevation: response.data.properties.elevation.value,
-          elevationUnit: getUnitString(response.data.properties.elevation.unitCode)
-        })
+        let [elevation, elevationUnit] = convertFromMeters(
+          response.data.properties.elevation.value,
+          response.data.properties.elevation.unitCode);
+        addToForecastsMap(placeKey, "location", { elevation, elevationUnit });
         let data = [], count = response.data.properties.periods.length;
         for (let i = 0; i < count - 1; i++) {
           const weatherData = loadWeatherForecast(response.data.properties.periods[i]);
@@ -330,15 +330,23 @@ function App() {
             <div className="GoogleMapContainer">
               <GoogleMap
                 mapContainerStyle={MAP_CONTAINER_STYLE}
-                mapType={DEFAULT_MAP_TYPE}
-                style={MAP_PARKS_STYLE}
-                mapOptions={INITIAL_MAP_OPTIONS}
+                mapTypeId={DEFAULT_MAP_TYPE}
+                showMapTypeId={false}
+                mapStyle={MAP_PARKS_STYLE}
                 center={INITIAL_MAP_CENTER}
                 zoom={DEFAULT_ZOOM_LEVEL}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 onClick={onMapClick}
                 clickableIcons={false}
+                // mapTypeIdButton={false}
+                // mapOptions={IN1ITIAL_MAP_OPTIONS}
+                // tilt={(90)}
+                // featureType={"parks"}
+                // scrollwheel={false}
+                // navigationControl={false}
+              // scaleControl={false}
+              // draggable={false}
               >
                 <div>
                   <StandaloneSearchBox
@@ -368,43 +376,47 @@ function App() {
                       <div className='info-window-time-select'>
                         <button className="nav-button" onClick={() => navigateDailyForecast(-1)} disabled={selectedMarker.dateIndex === 0}>
                           {"<<  "}</button>
-                        {selectedMarker.current && <h4 className="info-window-title">
-                          {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}   ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_dailies} )</h4>}
+                        {selectedMarker.current &&
+                          <h4>{selectedMarker.current.dateStr} ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_dailies} )</h4>
+                        }
+                        {/* {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}  */}
                         <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={!selectedMarker.current || (selectedMarker.dateIndex + 1 === selectedMarker.num_dailies)}>
                           {"  >>"}</button>
                       </div>
-                      <h2 padding="0">{selectedMarker.current.timePeriod}: {selectedMarker.current.desc}</h2>
+                      <h3 className="info-window-title">
+                        {selectedMarker.current.timePeriod}: {selectedMarker.current.desc}</h3>
                       <div className="info-window-body">
                         <img className="info-window-image" src={selectedMarker.current.weatherIcon} alt={selectedMarker.current.desc} />
+                        <p className="info-window-desc">{selectedMarker.current.fullDesc}</p>
+                      </div>
                         <div>
                           <ul className="info-window-list">
                             <table padding="0" className="info-window-content">
                               <tbody>
+                                <tr>
+                                  <td>Wind Speed:</td>
+                                  <td>{selectedMarker.current.windSpeed} ({selectedMarker.current.windDirection})</td>
+                                </tr>
+                                {selectedMarker.current.temp && <tr>
+                                  <td>Temperature:</td>
+                                  <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `(${selectedMarker.current.trend})` : ``}</td>
+                                </tr>}
+                                {selectedMarker.current.precipitation && <tr>
+                                  <td>Precipitation:</td>
+                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
+                                </tr>}
+                                {selectedMarker.current.relativeHumidity && <tr>
+                                  <td>Humidity: </td>
+                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
+                                </tr>}
                                 {selectedMarker.location.elevation && <tr>
                                   <td>Elevation: </td>
                                   <td>{selectedMarker.location.elevation} {selectedMarker.location.elevationUnit}</td>
                                 </tr>}
-                                {selectedMarker.current.temp && <tr>
-                                  <td>Temperature: </td>
-                                  <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `( ${selectedMarker.current.trend} )` : ``}</td>
-                                </tr>}
-                                {selectedMarker.current.precipitation && <tr>
-                                  <td>Precipitation: </td>
-                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
-                                </tr>}
-                                {selectedMarker.current.relativeHumidity && <tr>
-                                  <td>Rel. Humidity: </td>
-                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
-                                </tr>}
-                                <tr>
-                                  <td>Wind Speed: </td>
-                                  <td>{selectedMarker.current.windSpeed} ({selectedMarker.current.windDirection})</td>
-                                </tr>
                               </tbody>
                             </table>
                           </ul>
                         </div>
-                      </div>
                       <div className="info-window-status">
                         {(() => {
                           const allSuccess = selectedMarker.allSucces || selectedMarker.failedStr === '';
@@ -424,8 +436,7 @@ function App() {
                           );
                         })()}
                       </div>
-                      <p>{selectedMarker.current.fullDesc}</p>
-                      <div className="remove-container">
+                      <div className="info-window-remove">
                         <button className="remove-button" onClick={() => removeMarker(selectedMarker.id)}>Remove</button>
                       </div>
                     </div>
