@@ -1,15 +1,17 @@
 .App {
   text-align: start;
-  display: stretch;
-  height: 600px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   width: 100vw;
+  overflow: hidden;
 }
 
 .App-header {
   background-color: #172155;
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  height: auto;
-  padding: 2px;
+  height: 63px;
+  /* padding: 2px; */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,21 +29,17 @@
 .dropdown {
   font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   font-size: calc(20px + 1vmin);
-  height: 45px;
   height: calc(35px + 1vmin);
   padding: 5px;
   border: none;
   background-color: #000240;
   color: #F7F7F7;
-  z-index: 5;
 }
 
 .header-content {
   display: flex;
   align-items: center;
-  height: auto;
   padding-right: 50px;
-  z-index: 5;
 }
 
 .filter-icon {
@@ -49,8 +47,6 @@
   position: fixed;
   right: 20px;
   margin-right: 3px;
-  float: right;
-  z-index: 6;
 }
 
 .slider-container.disabled {
@@ -58,26 +54,18 @@
 }
 
 .main-content {
-  display: fill;
-  height: 600px;
-  width: 100vw;
-  height: 100vw;
-  bottom: 0;
-  z-index: 1;
+  flex-grow: 1;
+  position: relative;
 }
 
 .GoogleMapContainer {
-  display: stretch;
-  height: 600px;
+  position: absolute;
   width: 100vw;
+  height: 100vh;
+  top: 0;
   left: 0;
+  right: 0;
   bottom: 0;
-  z-index: 1;
-}
-
-.search-box {
-  left: 10vh;
-  align-items: center;
 }
 
 .info-window-status {

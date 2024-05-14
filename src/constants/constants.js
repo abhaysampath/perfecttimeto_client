@@ -5,10 +5,6 @@ export const CORS_REDIRECT = "https://cors-anywhere.herokuapp.com/";
 export const WEATHER_PERIOD_LIMIT = 25;
 export const NEARBY_PLACE_LIMIT = 3;
 
-export const PLACES_LIBRARY = ['places'];
-// export const SEARCH_ZOOM_LEVEL = 10;
-export const DEFAULT_ZOOM_LEVEL = 14;
-export const INITIAL_ZIP_CODE ='11232';
 export const SHOW_FILTERS_ON_LOAD = false;
 export const CONVERT_METERS_TO_FEET = 3.28084;
 export const CONVERT_METERS_TO_MILES = 0.000621371;

@@ -1,16 +1,15 @@
 import './styles/app.css';
 import { useState, useRef, useCallback } from "react";
 import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SHOW_FILTERS_ON_LOAD } from './constants';
-import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
+import { SHOW_FILTERS_ON_LOAD } from './constants/constants';
+import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY } from "./constants/map-constants";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
 import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils';
-import { SEARCH_BOX_STYLE } from './styles';
-import { INIT_FILTER_CONFIG } from './filtersConfig';
+import { SEARCH_BOX_STYLE } from "./constants/map-constants";
+import { INIT_FILTER_CONFIG } from './constants/filter-constants';
 import axios from 'axios';
-import SliderComponent from './SliderComponent';
-// import { checkValidTimeOfDay, checkTemperature, checkWindSpeed, checkPrecipitation } from './Filters';
+import SliderComponent from './components/SliderComponent.js';
 
 function App() {
   const [mapRef, setMapRef] = useState(null);
@@ -47,13 +46,17 @@ function App() {
     const searchResults = searchBoxRef.current.getPlaces();
     const mapBounds = new window.google.maps.LatLngBounds();
     searchResults?.forEach(place => {
+      //TODO: Save place data in forecastsMap
+      console.log(`  Place: ${JSON.stringify(place)}`);
       if (place.geometry.viewport) {
         mapBounds.union(place.geometry.viewport);
       } else {
         mapBounds.extend(place.geometry.location);
       }
     });
-    mapRef?.fitBounds(mapBounds);
+    mapRef?.setCenter(mapBounds.getCenter());
+    console.log(`  Adding Marker at search location: ${JSON.stringify(mapBounds)}`);
+    onMapClick({ latLng: mapBounds.getCenter() });
   };
   const getGridXY = (marker) => {
     const nws_weather_url = `https://api.weather.gov/points/${marker.placeKey}`;
@@ -118,7 +121,7 @@ function App() {
         let data = [], count = response.data.properties.periods.length;
         for (let i = 0; i < count - 1; i++) {
           const weatherData = loadWeatherForecast(response.data.properties.periods[i]);
-          data.push(weatherData);  //TODO: Don't load nulls
+          data.push(weatherData);
         };
         return data;
       }).then((data) => {
@@ -132,7 +135,6 @@ function App() {
   const onMapClick = useCallback((e) => {
     console.log(`  Map Click: ${JSON.stringify(e)}`);
     const placeKey = getPlacesKey(e.latLng.lat(), e.latLng.lng());
-    //Move this to a separate method that can be called for nearby places
     const newMarker = {
       id: new Date().toISOString(),
       position: e.latLng.toJSON(),
@@ -305,7 +307,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+      <header className="App-header" id="header">
         <div className="header-content">
           <h1 className="title">PerfectTimeTo</h1>
           <select className="dropdown" onChange={() => window.location.reload()}>
@@ -323,30 +325,30 @@ function App() {
           googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}
           libraries={PLACES_LIBRARY}
         >
-          {!{ mapRef } ? (
-            <h1>Loading...</h1>
-          ) : (
+          {{ mapRef } ? (
             <div className="GoogleMapContainer">
               <GoogleMap content="width=device-width, user-scalable=no"
                 mapContainerStyle={MAP_CONTAINER_STYLE}
-                mapStyle={MAP_PARKS_STYLE}
-                mapOptions={INITIAL_MAP_OPTIONS}
+                // mapStyle={MAP_PARKS_STYLE}
+                options={INITIAL_MAP_OPTIONS}
                 // mapTypeId={DEFAULT_MAP_TYPE}
-                clickableIcons={false}
+                // clickableIcons={false}
                 // gestureHandling='greedy'
                 center={INITIAL_MAP_CENTER}
                 zoom={DEFAULT_ZOOM_LEVEL}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 onClick={onMapClick}
-                scrollwheel={false}
-                // tilt={(90)}
+                tilt={(45)}
+                // scrollwheel={false}
                 featureType={"parks"}
               >
                 <div>
                   <StandaloneSearchBox
                     onLoad={onSearchLoad}
-                    onPlacesChanged={onPlacesChanged}>
+                    onPlacesChanged={onPlacesChanged}
+                    bounds={mapRef ? mapRef.getBounds() : null}
+                    defaultCenter={INITIAL_MAP_CENTER}>
                     <input
                       id={"searchbox-text"}
                       type="text"
@@ -438,6 +440,8 @@ function App() {
                 )}
               </GoogleMap>
             </div>
+          ) : (
+            <h1>Loading...</h1>
           )}
         </LoadScript>
       </main>

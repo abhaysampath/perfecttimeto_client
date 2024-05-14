@@ -1,4 +1,4 @@
-import { CONVERT_METERS_TO_FEET, CONVERT_METERS_TO_MILES } from "./constants";
+import { CONVERT_METERS_TO_FEET, CONVERT_METERS_TO_MILES } from "./constants/constants";
 
 export const getDateKey = (time, isDaytime) => {
     return new Date(time).toLocaleDateString('en-us');
@@ -87,14 +87,6 @@ export const loadNWSData = (nws_data) => {
         distance: distance,
     };
 }
-export const printMap = (myMap, name = '') => {
-    for (let [k, f] of [Object.entries(...myMap)]) {
-      console.log(` pring keys map in ${name}- ${JSON.stringify(k[1])}-> ${JSON.stringify(f[1])}`);
-      // for (let [a, b] of [Object.entries(f[0])]) {
-      //   console.log(`    ${name}-ik- ${JSON.stringify(b)}`);//-> ${JSON.stringify(Object(b))}`); ${JSON.stringify(a)}
-      // }
-    }
-  }
 export const loadWeatherForecast = (forecast) => {
     return {
         timePeriod: forecast.name,
