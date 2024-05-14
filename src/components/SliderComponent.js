@@ -1,8 +1,8 @@
+import '../styles/filters.css';
 import React from 'react';
 import Slider from '@mui/material/Slider';
 import MuiInput from '@mui/material/Input';
 import { Typography, Checkbox, FormControlLabel, Box } from '@mui/material';
-import './styles/filters.css';
 
 export const SliderComponent = ({ index, slider, onSliderChange }) => {
     const { name, bounds, units, sliderValue, isEnabled } = slider;
@@ -109,4 +109,5 @@ export const SliderComponent = ({ index, slider, onSliderChange }) => {
         </Box>
     );
 };
+
 export default SliderComponent;
