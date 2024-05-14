@@ -340,7 +340,7 @@ function App() {
                 onClick={onMapClick}
                 clickableIcons={false}
                 // mapTypeIdButton={false}
-                // mapOptions={IN1ITIAL_MAP_OPTIONS}
+                mapOptions={INITIAL_MAP_OPTIONS}
                 // tilt={(90)}
                 // featureType={"parks"}
                 // scrollwheel={false}
