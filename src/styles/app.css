@@ -1,26 +1,21 @@
 .App {
   text-align: start;
   display: stretch;
-  height: 100vh;
+  height: 600px;
   width: 100vw;
 }
 
 .App-header {
   background-color: #172155;
   font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  height: 72px;
-  padding: 0;
+  height: auto;
+  padding: 2px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   color: white;
   z-index: 4;
-}
-
-.App-background {
-  background-color: #172155;
-  color: white;
 }
 
 .title {
@@ -64,18 +59,18 @@
 
 .main-content {
   display: fill;
+  height: 600px;
   width: 100vw;
-  height: 100vw;
   bottom: 0;
   z-index: 1;
 }
 
 .GoogleMapContainer {
   display: stretch;
-  height: 92vh;
+  height: 600px;
   width: 100vw;
   left: 0;
-  top: 0;
+  bottom: 0;
   z-index: 1;
 }
 
