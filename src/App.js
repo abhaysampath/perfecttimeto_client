@@ -2,12 +2,11 @@ import './styles/app.css';
 import { useState, useRef, useCallback } from "react";
 import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
 import { DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SHOW_FILTERS_ON_LOAD } from './constants';
-import { DEFAULT_MAP_TYPE, INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
+import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, MAP_PARKS_STYLE } from "./styles/map-styles";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
 import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils';
 import { SEARCH_BOX_STYLE } from './styles';
-import { LoadingScreen } from './LoadingScreen';
 import { INIT_FILTER_CONFIG } from './filtersConfig';
 import axios from 'axios';
 import SliderComponent from './SliderComponent';
@@ -325,28 +324,24 @@ function App() {
           libraries={PLACES_LIBRARY}
         >
           {!{ mapRef } ? (
-            <LoadingScreen />
+            <h1>Loading...</h1>
           ) : (
             <div className="GoogleMapContainer">
-              <GoogleMap
+              <GoogleMap content="width=device-width, user-scalable=no"
                 mapContainerStyle={MAP_CONTAINER_STYLE}
-                mapTypeId={DEFAULT_MAP_TYPE}
-                showMapTypeId={false}
                 mapStyle={MAP_PARKS_STYLE}
+                mapOptions={INITIAL_MAP_OPTIONS}
+                // mapTypeId={DEFAULT_MAP_TYPE}
+                clickableIcons={false}
+                // gestureHandling='greedy'
                 center={INITIAL_MAP_CENTER}
                 zoom={DEFAULT_ZOOM_LEVEL}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
                 onClick={onMapClick}
-                clickableIcons={false}
-                // mapTypeIdButton={false}
-                mapOptions={INITIAL_MAP_OPTIONS}
+                scrollwheel={false}
                 // tilt={(90)}
-                // featureType={"parks"}
-                // scrollwheel={false}
-                // navigationControl={false}
-              // scaleControl={false}
-              // draggable={false}
+                featureType={"parks"}
               >
                 <div>
                   <StandaloneSearchBox
@@ -372,14 +367,13 @@ function App() {
                     position={selectedMarker.position}
                     onCloseClick={() => setSelectedMarker(null)}
                   >
-                    <div className="info-window" >
+                    <div className="info-window">
                       <div className='info-window-time-select'>
                         <button className="nav-button" onClick={() => navigateDailyForecast(-1)} disabled={selectedMarker.dateIndex === 0}>
                           {"<<  "}</button>
                         {selectedMarker.current &&
                           <h4>{selectedMarker.current.dateStr} ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_dailies} )</h4>
                         }
-                        {/* {selectedMarker.current.shortDate}  {selectedMarker.current.timeRangeStr}  */}
                         <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={!selectedMarker.current || (selectedMarker.dateIndex + 1 === selectedMarker.num_dailies)}>
                           {"  >>"}</button>
                       </div>
@@ -389,34 +383,34 @@ function App() {
                         <img className="info-window-image" src={selectedMarker.current.weatherIcon} alt={selectedMarker.current.desc} />
                         <p className="info-window-desc">{selectedMarker.current.fullDesc}</p>
                       </div>
-                        <div>
-                          <ul className="info-window-list">
-                            <table padding="0" className="info-window-content">
-                              <tbody>
-                                <tr>
-                                  <td>Wind Speed:</td>
-                                  <td>{selectedMarker.current.windSpeed} ({selectedMarker.current.windDirection})</td>
-                                </tr>
-                                {selectedMarker.current.temp && <tr>
-                                  <td>Temperature:</td>
-                                  <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `(${selectedMarker.current.trend})` : ``}</td>
-                                </tr>}
-                                {selectedMarker.current.precipitation && <tr>
-                                  <td>Precipitation:</td>
-                                  <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
-                                </tr>}
-                                {selectedMarker.current.relativeHumidity && <tr>
-                                  <td>Humidity: </td>
-                                  <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
-                                </tr>}
-                                {selectedMarker.location.elevation && <tr>
-                                  <td>Elevation: </td>
-                                  <td>{selectedMarker.location.elevation} {selectedMarker.location.elevationUnit}</td>
-                                </tr>}
-                              </tbody>
-                            </table>
-                          </ul>
-                        </div>
+                      <div>
+                        <ul className="info-window-list">
+                          <table padding="0" className="info-window-content">
+                            <tbody>
+                              <tr>
+                                <td>Wind Speed:</td>
+                                <td>{selectedMarker.current.windSpeed} ({selectedMarker.current.windDirection})</td>
+                              </tr>
+                              {selectedMarker.current.temp && <tr>
+                                <td>Temperature:</td>
+                                <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `(${selectedMarker.current.trend})` : ``}</td>
+                              </tr>}
+                              {selectedMarker.current.precipitation && <tr>
+                                <td>Precipitation:</td>
+                                <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
+                              </tr>}
+                              {selectedMarker.current.relativeHumidity && <tr>
+                                <td>Humidity: </td>
+                                <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
+                              </tr>}
+                              {selectedMarker.location.elevation && <tr>
+                                <td>Elevation: </td>
+                                <td>{selectedMarker.location.elevation} {selectedMarker.location.elevationUnit}</td>
+                              </tr>}
+                            </tbody>
+                          </table>
+                        </ul>
+                      </div>
                       <div className="info-window-status">
                         {(() => {
                           const allSuccess = selectedMarker.allSucces || selectedMarker.failedStr === '';
@@ -454,7 +448,7 @@ function App() {
               key={index}
               index={index}
               slider={slider}
-              onSliderChange={handleSliderChange} />
+              onSliderChange={handleSliderChange} />;
           })}
         </div>
       )}
