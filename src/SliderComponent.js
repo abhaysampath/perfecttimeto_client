@@ -16,17 +16,10 @@ export const SliderComponent = ({ index, slider, onSliderChange }) => {
         const marks = [];
         for (let i = 0; i <= NUMBER_OF_DIVISIONS; i++) {
             let markValue = bounds.lower + (i * Math.floor(range / NUMBER_OF_DIVISIONS));
-            if (markValue === bounds.lower || markValue === bounds.upper) {
-                marks.push({
-                    value: markValue,
-                    label: <Typography style={MARKS_LABEL_STYLE}>{markValue} {units}</Typography>
-                })
-            } else {
-                marks.push({
-                    value: markValue,
-                    label: <Typography style={MARKS_LABEL_STYLE}>{markValue}</Typography>
-                });
-            }
+            marks.push({
+                value: markValue,
+                label: <Typography style={MARKS_LABEL_STYLE}>{markValue}</Typography>
+            });
         };
         return marks;
     }

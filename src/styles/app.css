@@ -7,6 +7,7 @@
 
 .App-header {
   background-color: #172155;
+  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   height: 72px;
   padding: 0;
   display: flex;
@@ -14,8 +15,7 @@
   align-items: center;
   justify-content: center;
   color: white;
-  z-index: 5;
-  opacity: 100%;
+  z-index: 4;
 }
 
 .App-background {
@@ -24,12 +24,13 @@
 }
 
 .title {
-  font-size: calc(20px + 1vmin);
+  font-size: calc(22px + 1vmin);
   color: #F7F7F7;
-  margin-right: 20px;
+  margin-right: 10px;
 }
 
 .dropdown {
+  font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;
   font-size: calc(20px + 1vmin);
   height: 45px;
   height: calc(35px + 1vmin);
@@ -44,7 +45,17 @@
   display: flex;
   align-items: center;
   height: auto;
+  padding-right: 50px;
   z-index: 5;
+}
+
+.filter-icon {
+  cursor: pointer;
+  position: fixed;
+  right: 20px;
+  margin-right: 3px;
+  float: right;
+  z-index: 6;
 }
 
 .slider-container.disabled {
@@ -54,15 +65,17 @@
 .main-content {
   display: fill;
   width: 100vw;
+  height: 100vw;
   bottom: 0;
   z-index: 1;
 }
 
 .GoogleMapContainer {
-  display: fill;
-  height: 95vh;
+  display: stretch;
+  height: 92vh;
   width: 100vw;
-  bottom: 0;
+  left: 0;
+  top: 0;
   z-index: 1;
 }
 
@@ -72,47 +85,56 @@
 }
 
 .info-window-status {
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: bolder;
   font-family: 'Montserrat';
   padding: 2px;
   margin: 15px;
-  margin-right: 45px;
-  margin-left: 45px;
   width: stretch;
   text-align: center;
   align-items: center;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
-
 .info-window {
   color: black;
-  font-size: 14px;
   font-family: 'Montserrat';
   padding: 0;
-  width: 350px;
+  width: auto;
+  max-width: 350px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-}
-
-.info-window-title {
-  text-align: center;
-  align-items: flex-start;
-  padding-top: 2px;
-  margin: 0;
 }
 
 .info-window-body {
   text-align: start;
   display: flex;
   align-items: flex-start;
-  gap: 15px;
-  padding: auto;
+  gap: 5px;
+  padding-bottom: 8px;
+}
+
+.info-window-title {
+  margin-top: 10px;
+  margin-bottom: 6px;
+  text-align: center;
+  text-overflow: "ellipsis";
+  white-space: nowrap;
+  overflow: hidden;
+  width: auto;
 }
 
 .info-window-image {
-  padding-bottom: 10px;
-  width: 90px;
-  height: 95px;
+  width: 80px;
+  height: auto;
+  padding-top: 5px;
+}
+
+.info-window-desc {
+  width: stretch;
+  height: 87px;
+  margin: 0;
+  line-height: 18px;
+  overflow: scroll;
 }
 
 .info-window-list {
@@ -122,9 +144,12 @@
 }
 
 .info-window-content {
-  padding: 0;
-  font-size: 17px;
+  padding: auto;
+  font-size: auto;
   font-weight: bolder;
+  text-overflow: ellipsis;
+  vertical-align: auto;
+  padding-top: 3px;
 }
 
 .info-window-time-select {
@@ -133,6 +158,7 @@
   align-items: center;
   background-color: #eee;
   height: 25px;
+  width: stretch;
 }
 
 .nav-button {
@@ -147,13 +173,12 @@
   color: #ccc;
 }
 
-.remove-container {
-  margin-top: 10px;
+.info-window-remove {
   text-align: center;
 }
 
 .remove-button {
-  padding: 5px 10px;
+  padding: 1px;
   background-color: transparent;
   color: gray;
   border: none;
@@ -179,7 +204,7 @@
   margin-top: 10px;
   background-color: #fff;
   border: 1px solid #000;
-  border-radius: 4px;
+  border-radius: 5px;
   padding: 5px 10px;
   cursor: pointer;
 }

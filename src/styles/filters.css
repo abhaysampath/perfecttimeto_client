@@ -1,4 +1,7 @@
 .slider-container {
+    font-family: 'Arial Narrow', sans-serif;
+    font-weight: light;
+    /* 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; */
     margin-left: 15px;
     margin-top: 50px;
     margin-right: 50px;
@@ -11,44 +14,6 @@
     display: fill;
 }
 
-.slider-values {
-    margin-top: 4px;
-    display: inline-flex;
-    height: auto;
-    position: absolute;
-    right: 20px;
-    margin-right: 10px;
-}
-
-.slider-name {
-    display: inline-flex;
-    font-family: 'Montserrat';
-    font-size: 22px;
-    font-weight: 200;
-    float: left;
-    margin-right: 5px;
-    padding-bottom: 0;
-}
-
-.slider-units {
-    left: 20;
-    font-family: 'Montserrat';
-    padding-left: 2px;
-    padding-right: 2px;
-    padding-bottom: 0;
-    font-size: larger;
-    font-weight: medium;
-}
-.slider-top-row {
-    display: inline-flex;
-    align-items: center;
-    width: 500px;
-    margin-left: auto;
-    margin-right: 0;
-}
-.FormControlLabel {
-    align-items: left;
-}
 .slider-container input[type="range"],
 .slider-container input[type="number"],
 .input-container {
@@ -64,7 +29,40 @@
     border-radius: '50% 50% 50% 0';
     background-color: '#52af77';
 }
-
+.slider-top-row {
+    display: inline-flex;
+    align-items: center;
+    width: auto;
+    margin-left: auto;
+    margin-right: 0;
+}
+.FormControlLabel {
+    align-items: left;
+}
+.slider-name {
+    display: inline-flex;
+    font-size: 21px;
+    font-weight: 300;
+    float: left;
+    margin-right: 5px;
+    padding-bottom: 0;
+}
+.slider-values {
+    margin-top: 4px;
+    display: inline-flex;
+    height: auto;
+    position: absolute;
+    right: 10px;
+    margin-right: 10px;
+}
+.slider-units {
+    left: 10;
+    padding-left: 2px;
+    padding-right: 2px;
+    padding-bottom: 0;
+    font-size: larger;
+    font-weight: medium;
+}
 .slider-slider {
     padding-top: 8px;
     color: 'white';
@@ -72,25 +70,15 @@
     border: 'none';
 }
 
-.filter-icon {
-    cursor: pointer;
-    position: fixed;
-    right: 20px;
-    height: 4vh;
-    width: 30px;
-    float: right;
-    margin-right: 10px;
-}
-
 .filters-panel {
     padding-top: 56px;
     padding-right: 0;
-    padding-left: 24px;
+    padding-left: 14px;
     position: fixed;
     top:0;
     right: 0;
     bottom: 0;
-    min-width: 400px;
+    min-width: 300px;
     max-width: 85%;
     background-color: #192044;
     z-index: 3;
