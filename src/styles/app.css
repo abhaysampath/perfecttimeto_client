@@ -61,6 +61,7 @@
   display: fill;
   height: 600px;
   width: 100vw;
+  height: 100vw;
   bottom: 0;
   z-index: 1;
 }
