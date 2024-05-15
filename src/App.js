@@ -5,11 +5,12 @@ import { SHOW_FILTERS_ON_LOAD } from './constants/constants';
 import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY } from "./constants/map-constants";
 import TuneIcon from '@mui/icons-material/Tune';
 // import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils';
+import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils/utils.js';
 import { SEARCH_BOX_STYLE } from "./constants/map-constants";
 import { INIT_FILTER_CONFIG } from './constants/filter-constants';
 import axios from 'axios';
 import SliderComponent from './components/SliderComponent.js';
+import { getUniqueShortDates, checkAllFilters } from './utils/filterUtils.js';
 
 function App() {
   const [mapRef, setMapRef] = useState(null);
@@ -55,7 +56,6 @@ function App() {
       }
     });
     mapRef?.setCenter(mapBounds.getCenter());
-    console.log(`  Adding Marker at search location: ${JSON.stringify(mapBounds)}`);
     onMapClick({ latLng: mapBounds.getCenter() });
   };
   const getGridXY = (marker) => {
@@ -95,11 +95,12 @@ function App() {
           place.daily = [jsonValue];
         } else { place.daily = [...place, jsonValue] }
         break;
+      case 'geocode':
       case 'location':
-        if (!place.location) {
-          place.location = { ...jsonValue };
+        if (!place[jsonKey]) {
+          place[jsonKey] = { ...jsonValue };
         } else {
-          place.location = { ...place.location, ...jsonValue };
+          place[jsonKey] = { ...place[jsonKey], ...jsonValue };
         }
         break;
       default:
@@ -109,7 +110,6 @@ function App() {
   };
   //Read Hourly NWS Weather Data
   const getWeatherData = (placeKey, timePeriod, forecastOffice, gridX, gridY) => {
-    console.log(`  getWeatherData - p: ${JSON.stringify(placeKey)}, t: ${timePeriod}, x: ${gridX}, y: ${gridY}`);
     const nws_forecast_url = `https://api.weather.gov/gridpoints/${forecastOffice}/${gridX},${gridY}/forecast/`
       + (timePeriod === 'hourly' ? `hourly` : ``);
     axios.get(nws_forecast_url)
@@ -129,11 +129,9 @@ function App() {
       }).catch(e => {
         console.error(`ERROR: ${e} , ${JSON.stringify(e)}`);
       })
-    console.info(` exiting getWeatherData after fetching ${timePeriod}`);
   };
   //Place Marker on Map, start fetching data
   const onMapClick = useCallback((e) => {
-    console.log(`  Map Click: ${JSON.stringify(e)}`);
     const placeKey = getPlacesKey(e.latLng.lat(), e.latLng.lng());
     const newMarker = {
       id: new Date().toISOString(),
@@ -146,9 +144,35 @@ function App() {
     setPlacesCounter(placesCounter => placesCounter + 1);
     forecastsMap.set(placeKey, newMarker);
     getGridXY(newMarker);
+    getGeocodeData(e.latLng.lat(), e.latLng.lng());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  async function getGeocodeData(lat, lng) {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/text',
+        'Origin': 'http://perfecttimeto.com'
+      },
+    });
+    if (!response) {
+      console.error(`HTTP error when reading geocode data: status: ${response.status}`);
+    }
+    const data = await response.json();
+    const formattedData = {
+      fullAddress: data.display_name,
+      zip: data.address.postcode,
+      neighbourhood: data.address.neighbourhood || data.address.village || data.address.hamlet || data.address.suburb,
+      city: data.address.city || data.address.town,
+      state: data.address.state || data.address.county || data.address.region,
+      country: data.address.country || data.address.country_code,
+      streetName: data.address.road || data.address.pedestrian || data.address.footway || data.address.path || data.address.cycleway,
+      locationName: data.name || data[data.type] || data.address.road || data.address.neighbourhood || data.address.village || data.address.hamlet || data.address.suburb || data.address.city || data.address.town || data.address.county || data.address.state || data.address.country,
+      placeClass: data.class,
+      placeType: data.type,
+      };
+    addToForecastsMap(getPlacesKey(lat, lng), "geocode", { ...formattedData });
+  }
   const filterForecastsByDate = (forecasts, markerDateStr) => {
     let filteredForecasts = [];
     forecasts?.forEach((val) => {
@@ -160,119 +184,27 @@ function App() {
     });
     return filteredForecasts;
   };
-  const getUniqueShortDates = (input) => {
-    const uniqueDates = new Set();
-    input.forEach((obj) => {
-      Object.values(obj).forEach((value) => {
-        uniqueDates.add(value.shortDate)
-      })
-    });
-    return Array.from(uniqueDates);
-  };
-  //Apply Weather Filters
-  const checkAllFilters = (forecast) => {
-    let failedFilters = [];
-    if (forecast === undefined) { return; }
-    for (const slider of sliderStates) {
-      if (!slider.isEnabled) { continue; }
-      switch (slider.name) {
-        case "Temperature":
-          if (forecast["temp"]) {
-            const check = checkSliderRange(slider, forecast["temp"]);
-            if (check < 0) {
-              failedFilters.push("Too Cold");
-            } else if (check > 0) {
-              failedFilters.push("Too Hot");
-            }
-          }
-          break;
-        case "Wind Speed":
-          if (forecast["windSpeed"]) {
-            const check = isWindSpeedWithinSliderRange(slider, forecast["windSpeed"]);
-            if (check < 0) {
-              failedFilters.push("Not Windy Enough");
-            } else if (check > 0) {
-              failedFilters.push("Too Windy");
-            }
-          }
-          break;
-        case "Precipitation":
-          if (forecast["precipitation"]) {
-            const check = checkSliderRange(slider, forecast["precipitation"]);
-            if (check > 0) {
-              failedFilters.push("Too Wet");
-            }
-          }
-          break;
-        default:
-          console.error(`Unknown slider.name, skipping: ${JSON.stringify(slider.name)} ${JSON.stringify(slider)}`);
-          break;
-      }
-    }
-    return failedFilters;
-  };
-  const isWindSpeedWithinSliderRange = (slider, forecastString) => {
-    const rangeMatch = forecastString.match(/(\d+) to (\d+)/);
-    const singleMatch = forecastString.match(/(\d+)/);
-    const forecastLower = parseInt(rangeMatch ? rangeMatch[1] : (singleMatch ? singleMatch[1] : null), 10);
-    const forecastUpper = parseInt(rangeMatch ? rangeMatch[2] : (singleMatch ? singleMatch[1] : null), 10);
-    if (!forecastLower || !forecastUpper) {
-      throw new Error(`Could not extract wind speed from forecast: ${forecastString}`);
-    }
-    if (forecastUpper < slider.sliderValue[0]) {
-      return -1;
-    } else if (forecastLower > slider.sliderValue[1]) {
-      return 1;
-    } else {
-      return 0;
-    }
-  };
-  const checkSliderRange = (sliderStates, forecastValue) => {
-    console.log(` ${sliderStates.name} ${forecastValue}<${sliderStates.sliderValue[0]} || ${forecastValue}>${sliderStates.sliderValue[1]}`);
-    if (forecastValue < sliderStates.sliderValue[0]) {
-      return -1;
-    } else if (forecastValue > sliderStates.sliderValue[1]) {
-      console.error(` EXCLUDE: ${sliderStates.name}  ${forecastValue} NOT in ${JSON.stringify(sliderStates.sliderValue)} `);
-      return 1;
-    }
-    console.warn(` INCLUDE: ${sliderStates.name}  ${forecastValue} in ${JSON.stringify(sliderStates.sliderValue)} `);
-    return 0;
-  };
+
   //Show InfoWindow, populate with data
   const onMarkerClick = useCallback((marker) => {
-    console.log(`  Marker placeKey: ${marker['placeKey']}`);
     marker['dateIndex'] = 0;
-    console.log(`  Date INDEX : ${JSON.stringify(marker['dateIndex'])}`);
-
     let place = forecastsMap.get(marker['placeKey']);
     if (!place || place === undefined || place['daily'] === undefined) {
-      console.error("Place not yet loaded, return doing nothing.");
-      // re-trigger missing info? getGridXY(format(marker) );
       return;
     }
-    console.log(`  place daily: ${JSON.stringify(place['daily'])}`);
     marker['uniqueDates'] = getUniqueShortDates(place['daily']);
-    console.log(`  place unique dates: (${JSON.stringify(marker['uniqueDates'].length)}) ${JSON.stringify(marker['uniqueDates'])}`);
     marker['location'] = place["location"];
-    console.log(` MARKER  nwsData : ${JSON.stringify(marker['location'])}`);
+    marker['geocode'] = place["geocode"];
     marker['daily'] = place["daily"];
     marker['hourly'] = place["hourly"];
-    //This part will change by date, Move to separate method
     const markerDateStr = marker['uniqueDates'][marker['dateIndex']];
-    // getShortDate(daysInFuture(marker['dateIndex']));
     marker['markerDate'] = markerDateStr;
-    console.log(`  markerDate : ${marker['markerDate']}`);
     marker['current'] = filterForecastsByDate(marker["daily"], markerDateStr)[0]; //0 for daytime, update to get based on hour
-    console.log(`  FILTERED current : ${JSON.stringify(marker['current'])}`);
-    const failedFilters = checkAllFilters(marker['current']);
-    console.log(` failedFilters ${JSON.stringify(failedFilters)}`);
+    const failedFilters = checkAllFilters(marker['current'], sliderStates);
     marker['failedFilters'] = failedFilters;
     marker['failedStr'] = failedFilters ? failedFilters.join(', ') : '';
-    console.log(` failedStr ${JSON.stringify(marker['failedStr'])}`);
     marker['allSuccess'] = (failedFilters.length === 0);
-    console.log(` allSuccess ${JSON.stringify(marker['allSuccess'])}`);
     // marker['hourlies'] = filterForecastsByDate(marker["hourly"], markerDateStr);
-    // console.log(`  FILTERED hourlies by date : ${JSON.stringify(marker['hourlies'])}`);
     marker['num_dailies'] = marker['uniqueDates'].length;
     setSelectedMarker(marker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -289,7 +221,7 @@ function App() {
     if (newIndex >= 0 && newIndex < selectedMarker.num_dailies) {
       const markerDateStr = selectedMarker['uniqueDates'][newIndex];
       const current = filterForecastsByDate(selectedMarker["daily"], markerDateStr)[0];
-      const failedFilters = checkAllFilters(current);
+      const failedFilters = checkAllFilters(current, sliderStates);
       setSelectedMarker({
         ...selectedMarker,
         dateIndex: newIndex,
@@ -381,6 +313,9 @@ function App() {
                       </div>
                       <h3 className="info-window-title">
                         {selectedMarker.current.timePeriod}: {selectedMarker.current.desc}</h3>
+                      {selectedMarker.geocode && <h4 className='info-window-location'>
+                        {selectedMarker.geocode.locationName} - {selectedMarker.geocode.neighbourhood}, {selectedMarker.geocode.city}, {selectedMarker.geocode.state}
+                      </h4>}
                       <div className="info-window-body">
                         <img className="info-window-image" src={selectedMarker.current.weatherIcon} alt={selectedMarker.current.desc} />
                         <p className="info-window-desc">{selectedMarker.current.fullDesc}</p>
@@ -423,7 +358,9 @@ function App() {
                             fontSize: failedStr.length > 9 ? '80%' : '100%',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
-                            textOverflow: 'ellipsis'
+                            textOverflow: 'ellipsis',
+                            padding: '3px',
+                            paddingLeft: '5px',
                           };
                           return (
                             <div style={messageStyle}>

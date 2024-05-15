@@ -1,4 +1,4 @@
-import { CONVERT_METERS_TO_FEET, CONVERT_METERS_TO_MILES } from "./constants/constants";
+import { CONVERT_METERS_TO_FEET, CONVERT_METERS_TO_MILES } from "../constants/constants";
 
 export const getDateKey = (time, isDaytime) => {
     return new Date(time).toLocaleDateString('en-us');
