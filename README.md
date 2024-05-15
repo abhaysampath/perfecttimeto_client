@@ -111,7 +111,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 * [Yarn](https://yarnpkg.com/) - Dependency Management
 * [Google Maps API](https://developers.google.com/maps/documentation) - Used to generate maps and place markers
 * [NWS Weather API](https://www.weather.gov/documentation/services-web-api) - Used for fetching weather forecast data
-* [Geocode API](https://geocode.maps.co) - Used for looking up location information
+* [OpenStreetMap API](https://nominatim.openstreetmap.org) - Used for looking up location information
 
 ## Author
 
