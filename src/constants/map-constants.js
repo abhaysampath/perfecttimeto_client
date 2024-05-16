@@ -7,7 +7,7 @@ export const INITIAL_MAP_CENTER = // { lat: 40.7128, lng: -74.0060 }; // New Yor
     { lat: 40.69805005156146, lng: -74.0060546959678 } //Downtown NYC, above the water
 export function fullMinusHeader() {
     let fullHeight = window.innerHeight || 800;
-    let headerHeight = 63
+    let headerHeight = 65;
     return (100 * (fullHeight - headerHeight) / fullHeight) + 'vh';
 }
 export const MAP_CONTAINER_STYLE = {
@@ -49,6 +49,6 @@ export const SEARCH_BOX_STYLE = {
     outline: "none",
     textOverflow: "ellipses",
     position: 'absolute',
-    bottom: '40px',
-    left: '77px'
+    bottom: '42px',
+    left: '37px'
 };

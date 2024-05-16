@@ -28,6 +28,7 @@
     border-radius: '50% 50% 50% 0';
     background-color: '#52af77';
 }
+
 .slider-top-row {
     display: inline-flex;
     align-items: center;
@@ -35,9 +36,11 @@
     margin-left: auto;
     margin-right: 0;
 }
+
 .FormControlLabel {
     align-items: left;
 }
+
 .slider-name {
     display: inline-flex;
     font-size: 21px;
@@ -46,6 +49,7 @@
     margin-right: 5px;
     padding-bottom: 0;
 }
+
 .slider-values {
     margin-top: 4px;
     display: inline-flex;
@@ -54,6 +58,7 @@
     right: 10px;
     margin-right: 10px;
 }
+
 .slider-units {
     left: 10;
     padding-left: 2px;
@@ -62,6 +67,7 @@
     font-size: larger;
     font-weight: medium;
 }
+
 .slider-slider {
     padding-top: 8px;
     color: 'white';
@@ -74,7 +80,7 @@
     padding-right: 0;
     padding-left: 12px;
     position: fixed;
-    top:0;
+    top: 0;
     right: 0;
     bottom: 0;
     min-width: 300px;
