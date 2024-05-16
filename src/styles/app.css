@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Oswald:regular,bold,italic,Light&subset=latin,latin-ext');
+
 .App {
   text-align: start;
   display: flex;
@@ -9,9 +11,8 @@
 
 .App-header {
   background-color: #172155;
-  font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
-  height: 63px;
-  /* padding: 2px; */
+  font-family: 'Oswald', Impact, 'Arial Narrow', Light;
+  height: 65px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -27,7 +28,7 @@
 }
 
 .dropdown {
-  font-family: Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+  font-family: 'Arial Narrow', Haettenschweiler, sans-serif;
   font-size: calc(20px + 1vmin);
   height: calc(35px + 1vmin);
   padding: 5px;
@@ -39,7 +40,7 @@
 .header-content {
   display: flex;
   align-items: center;
-  padding-right: 50px;
+  padding-right: 25px;
 }
 
 .filter-icon {
@@ -106,6 +107,7 @@
   overflow: hidden;
   width: auto;
 }
+
 .info-window-location {
   margin-top: 2px;
   margin-bottom: 6px;
