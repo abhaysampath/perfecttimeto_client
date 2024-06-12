@@ -7,6 +7,17 @@ export const getUniqueShortDates = (input) => {
     });
     return Array.from(uniqueDates);
 };
+export const filterForecastsByDate = (forecasts, markerDateStr) => {
+    let filteredForecasts = [];
+    forecasts?.forEach((val) => {
+      Object.values(val).forEach((value, key) => {
+        if (value["shortDate"] === markerDateStr) {
+          filteredForecasts = [...filteredForecasts, value]
+        }
+      })
+    });
+    return filteredForecasts;
+  };
 //Apply Weather Filters
 export const checkAllFilters = (forecast, sliderStates) => {
     let failedFilters = [];
@@ -54,16 +65,16 @@ export const isWindSpeedWithinSliderRange = (slider, forecastString) => {
     const singleMatch = forecastString.match(/(\d+)/);
     const forecastLower = parseInt(rangeMatch ? rangeMatch[1] : (singleMatch ? singleMatch[1] : null), 10);
     const forecastUpper = parseInt(rangeMatch ? rangeMatch[2] : (singleMatch ? singleMatch[1] : null), 10);
-    if (!forecastLower || !forecastUpper) {
-        throw new Error(`Could not extract wind speed from forecast: ${forecastString}`);
+    if (forecastLower===undefined || !forecastUpper) {
+        console.warn(`IGNORING: Could not extract wind speed from forecast: ${forecastString}`);
+        return 0;
     }
     if (forecastUpper < slider.sliderValue[0]) {
         return -1;
     } else if (forecastLower > slider.sliderValue[1]) {
         return 1;
-    } else {
-        return 0;
     }
+    return 0;
 };
 export const checkSliderRange = (sliderStates, forecastValue) => {
     console.log(` ${sliderStates.name} ${forecastValue}<${sliderStates.sliderValue[0]} || ${forecastValue}>${sliderStates.sliderValue[1]}`);

@@ -1,66 +1,68 @@
 {
-  "name": "perfecttimeto_client",
-  "version": "0.1.0",
-  "private": true,
-  "homepage": "https://www.perfecttimeto.com/",
-  "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@mui/icons-material": "^5.15.16",
-    "@mui/material": "^5.15.17",
-    "@react-google-maps/api": "^2.19.3",
-    "@testing-library/jest-dom": "^6.4.5",
-    "@types/googlemaps": "^3.43.3",
-    "@types/jsdom": "^21.1.6",
-    "axios": "^1.6.8",
-    "google-maps": "^4.3.3",
-    "react": "^19.0.0-beta-94eed63c49-20240425",
-    "react-dom": "^19.0.0-beta-94eed63c49-20240425",
-    "react-scripts": "^5.0.1",
-    "web-vitals": "3.5.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@toolz/allow-react)/\" --env=jsdom --passWithNoTests",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "npm run deploy-gh-pages && npm run deploy-custom-domain",
-    "deploy-gh-pages": "gh-pages -d build",
-    "deploy-www": "gh-pages -d build --dest www"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/preset-env": "^7.24.5",
-    "@babel/preset-react": "^7.24.1",
-    "@babel/register": "^7.23.7",
-    "@testing-library/react": "^15.0.7",
-    "chai": "^5.1.1",
-    "chai-dom": "^1.12.0",
-    "gh-pages": "^6.1.1",
-    "jsdom": "^24.0.0",
-    "jsdom-global": "^3.0.2",
-    "mocha": "^10.4.0"
-  }
+	"name": "perfecttimeto_client",
+	"version": "0.1.0",
+	"private": true,
+	"homepage": "https://www.perfecttimeto.com/",
+	"dependencies": {
+		"@emotion/react": "^11.11.4",
+		"@emotion/styled": "^11.11.5",
+		"@material-ui/core": "^5.0.0-beta.5",
+		"@material-ui/icons": "^4.11.3",
+		"@mui/icons-material": "^5.15.16",
+		"@mui/material": "^6.0.0-alpha.8",
+		"@react-google-maps/api": "^2.19.3",
+		"@testing-library/jest-dom": "^6.4.5",
+		"@types/googlemaps": "^3.43.3",
+		"@types/jsdom": "^21.1.7",
+		"axios": "^1.7.2",
+		"google-maps": "^4.3.3",
+		"react": "^19.0.0-canary-fd0da3eef-20240404",
+		"react-dom": "^19.0.0-canary-fd0da3eef-20240404",
+		"react-scripts": "^5.0.1",
+		"web-vitals": "3.5.2"
+	},
+	"scripts": {
+		"start": "react-scripts start",
+		"build": "react-scripts build",
+		"test": "react-scripts test --transformIgnorePatterns \"node_modules/(?!@toolz/allow-react)/\" --env=jsdom --passWithNoTests",
+		"eject": "react-scripts eject",
+		"predeploy": "npm run build",
+		"deploy": "npm run deploy-gh-pages && npm run deploy-custom-domain",
+		"deploy-gh-pages": "gh-pages -d build",
+		"deploy-www": "gh-pages -d build --dest www"
+	},
+	"engines": {
+		"node": ">=16.0.0"
+	},
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest"
+		]
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
+	"devDependencies": {
+		"@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+		"@babel/preset-env": "^7.24.5",
+		"@babel/preset-react": "^7.24.1",
+		"@babel/register": "^7.23.7",
+		"@testing-library/react": "^15.0.7",
+		"chai": "^5.1.1",
+		"chai-dom": "^1.12.0",
+		"gh-pages": "^6.1.1",
+		"jsdom": "^24.0.0",
+		"jsdom-global": "^3.0.2",
+		"mocha": "^10.4.0"
+	}
 }
