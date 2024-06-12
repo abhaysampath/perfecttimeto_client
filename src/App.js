@@ -1,26 +1,27 @@
-import './styles/app.css';
-import { useState, useRef, useCallback } from "react";
-import { GoogleMap, StandaloneSearchBox, LoadScript, Marker, InfoWindow } from '@react-google-maps/api';
-import { SHOW_FILTERS_ON_LOAD } from './constants/constants';
-import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY } from "./constants/map-constants";
-import TuneIcon from '@mui/icons-material/Tune';
-// import { sendMessageIcon } from '@mui/icons-material/ScheduleSend';
-import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils/utils.js';
-import { SEARCH_BOX_STYLE } from "./constants/map-constants";
-import { INIT_FILTER_CONFIG } from './constants/filter-constants';
+import { useState, useRef, useCallback, useEffect } from "react";
+import { GoogleMap, StandaloneSearchBox, LoadScript, Marker } from '@react-google-maps/api';
 import axios from 'axios';
+import { Fab } from '@material-ui/core';
+import LocationOnIcon from '@material-ui/icons/LocationOn';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import TuneIcon from '@mui/icons-material/Tune';
+import { SHOW_FILTERS_ON_LOAD } from './constants/constants';
+import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SEARCH_BOX_STYLE } from "./constants/map-constants";
+import { INIT_FILTER_CONFIG } from './constants/filter-constants';
+import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } from './utils/utils.js';
+import { checkAllFilters, filterForecastsByDate, getUniqueShortDates } from './utils/filterUtils.js';
+import { getCurrentLocation, getIPLocation } from './utils/locationUtils.js';
 import SliderComponent from './components/SliderComponent.js';
-import { getUniqueShortDates, checkAllFilters } from './utils/filterUtils.js';
+import InfoWindowComponent from './components/infoWindow.js';
+import './styles/app.css';
 
 function App() {
   const [mapRef, setMapRef] = useState(null);
-  const [activity] = useState("fly a kite");
+  const [mapCenter, setMapCenter] = useState(INITIAL_MAP_CENTER);
   const [markers, setMarkers] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
-  const searchBoxRef = useRef(null);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  let forecastsMap = new Map(); // { lat,lng } => { daily:{}, hourly:{}, location:{} }
-  const [placesCounter, setPlacesCounter] = useState(0);
+  const [activity] = useState("fly a kite");
+  const [locationRequested, setLocationRequested] = useState(false);
   const [showFilters, setShowFilters] = useState(SHOW_FILTERS_ON_LOAD);
   const [sliderStates, setSliderStates] = useState(
     INIT_FILTER_CONFIG.map(filter => ({
@@ -32,16 +33,44 @@ function App() {
       isEnabled: true
     }))
   );
-  const handleSliderChange = (index, newValue) => {
-    const updatedSliderStates = [...sliderStates];
-    updatedSliderStates[index].sliderValue = newValue;
-    setSliderStates(updatedSliderStates);
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  let forecastsMap = new Map(); // { lat,lng } => { daily:{}, hourly:{}, location:{} }
+  const [placesCounter, setPlacesCounter] = useState(0);
+  const searchBoxRef = useRef(null);
+  useEffect(() => {
+    getIPLocation().then((ipLocation) => {
+      if (ipLocation !== undefined && ipLocation !== null) {
+        setMapCenter({ lat: ipLocation.lat, lng: ipLocation.lng });
+        addMarker(ipLocation.lat, ipLocation.lng);
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const onLoad = (ref) => {
     setMapRef(ref);
   };
   const onSearchLoad = (ref) => {
     searchBoxRef.current = ref;
+  };
+  const getLocation = () => {
+    setLocationRequested(true);
+    getCurrentLocation().then((l) => {
+      if (l === undefined || l === null) {
+        console.error(`getLocation: l is undefined: ${l}`);
+        return;
+      }
+      setMapCenter({ lat: l.lat, lng: l.lng });
+      const latLng = { "lat": l.lat, "lng": l.lng };
+      console.log(`AAAA Location: ${JSON.stringify({ latLng })}`);
+      addMarker(l.lat, l.lng);
+    }).finally(() => {
+      setLocationRequested(false);
+    });
+  };
+  const handleSliderChange = (index, newValue) => {
+    const updatedSliderStates = [...sliderStates];
+    updatedSliderStates[index].sliderValue = newValue;
+    setSliderStates(updatedSliderStates);
   };
   const onPlacesChanged = () => {
     const searchResults = searchBoxRef.current.getPlaces();
@@ -70,8 +99,6 @@ function App() {
         const [forecastOffice, gridX, gridY] = args;
         getWeatherData(marker.placeKey, "hourly", forecastOffice, gridX, gridY);
         getWeatherData(marker.placeKey, "daily", forecastOffice, gridX, gridY);
-        // Update to read from https://api.weather.gov/gridpoints/OKX/33,35
-        // getWeatherData(placeKey, "detail", forecastOffice, gridX, gridY);
       }).catch(e => {
         console.error(`ERROR getGridXY: ${e} , ${JSON.stringify(e)}`);
       })
@@ -131,23 +158,37 @@ function App() {
       })
   };
   //Place Marker on Map, start fetching data
-  const onMapClick = useCallback((e) => {
-    const placeKey = getPlacesKey(e.latLng.lat(), e.latLng.lng());
+  const onMapClick = (e) => {
+    const lat = e.latLng.lat();
+    const lng = e.latLng.lng();
+    addMarker(lat, lng, e.pixel);
+  };
+  const addMarker = useCallback((lat, lng, pixel = null) => {
+    if (lat === undefined || lng === undefined) {
+      console.error(`addMarker: lat or lng is undefined: ${lat}, ${lng}`);
+      return;
+    }
+    const placeKey = getPlacesKey(lat, lng);
+    console.log(`CCCC Location: ${lat}, ${lng}`);
     const newMarker = {
       id: new Date().toISOString(),
-      position: e.latLng.toJSON(),
-      placeKey: getPlacesKey(e.latLng.lat(), e.latLng.lng()),
-      pixel: e.pixel,
+      position: { lat: lat, lng: lng },
+      placeKey: getPlacesKey(lat, lng),
+      pixel: pixel,
       placeIndex: placesCounter
     };
     setMarkers(currentMarkers => [...currentMarkers, { ...newMarker }]);
     setPlacesCounter(placesCounter => placesCounter + 1);
     forecastsMap.set(placeKey, newMarker);
     getGridXY(newMarker);
-    getGeocodeData(e.latLng.lat(), e.latLng.lng());
+    getGeocodeData(lat, lng);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   async function getGeocodeData(lat, lng) {
+    if (lat === undefined || lng === undefined) {
+      console.error(`getGeocodeData: lat or lng is undefined: ${lat}, ${lng}`);
+      return;
+    }
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
     const response = await fetch(url, {
       headers: {
@@ -161,7 +202,7 @@ function App() {
     const data = await response.json();
     const formattedData = {
       fullAddress: data.display_name,
-      zip: data.address.postcode,
+      zip: data.address.postcode || data.address.zipcode || data.address.postalcode || data.address.postal_code,
       neighbourhood: data.address.neighbourhood || data.address.village || data.address.hamlet || data.address.suburb,
       city: data.address.city || data.address.town,
       state: data.address.state || data.address.county || data.address.region,
@@ -170,21 +211,9 @@ function App() {
       locationName: data.name || data[data.type] || data.address.road || data.address.neighbourhood || data.address.village || data.address.hamlet || data.address.suburb || data.address.city || data.address.town || data.address.county || data.address.state || data.address.country,
       placeClass: data.class,
       placeType: data.type,
-      };
+    };
     addToForecastsMap(getPlacesKey(lat, lng), "geocode", { ...formattedData });
   }
-  const filterForecastsByDate = (forecasts, markerDateStr) => {
-    let filteredForecasts = [];
-    forecasts?.forEach((val) => {
-      Object.values(val).forEach((value, key) => {
-        if (value["shortDate"] === markerDateStr) {
-          filteredForecasts = [...filteredForecasts, value]
-        }
-      })
-    });
-    return filteredForecasts;
-  };
-
   //Show InfoWindow, populate with data
   const onMarkerClick = useCallback((marker) => {
     marker['dateIndex'] = 0;
@@ -208,10 +237,6 @@ function App() {
     marker['num_dailies'] = marker['uniqueDates'].length;
     setSelectedMarker(marker);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  const removeMarker = useCallback((id) => {
-    setMarkers((markers) => markers.filter(m => m.id !== id));
-    setSelectedMarker(null);
   }, []);
   const onUnmount = useCallback(() => {
     setMapRef(null);
@@ -266,7 +291,7 @@ function App() {
                 // mapTypeId={DEFAULT_MAP_TYPE}
                 // clickableIcons={false}
                 // gestureHandling='greedy'
-                center={INITIAL_MAP_CENTER}
+                center={mapCenter}
                 zoom={DEFAULT_ZOOM_LEVEL}
                 onLoad={onLoad}
                 onUnmount={onUnmount}
@@ -280,13 +305,19 @@ function App() {
                     onLoad={onSearchLoad}
                     onPlacesChanged={onPlacesChanged}
                     bounds={mapRef ? mapRef.getBounds() : null}
-                    defaultCenter={INITIAL_MAP_CENTER}>
+                    defaultCenter={mapCenter}>
                     <input
                       id={"searchbox-text"}
                       type="text"
                       placeholder="Search places..."
                       style={SEARCH_BOX_STYLE} />
                   </StandaloneSearchBox>
+                  <Fab className='location-button'
+                    color={locationRequested ? 'inherit' : 'primary'}
+                    size="small"
+                    onClick={getLocation}>
+                    <LocationOnIcon />
+                  </Fab>
                 </div>
                 {markers.map(marker => (
                   <Marker
@@ -296,89 +327,24 @@ function App() {
                   />
                 ))}
                 {selectedMarker && (
-                  <InfoWindow
-                    id={selectedMarker.position}
-                    position={selectedMarker.position}
-                    onCloseClick={() => setSelectedMarker(null)}
-                  >
-                    <div className="info-window">
-                      <div className='info-window-time-select'>
-                        <button className="nav-button" onClick={() => navigateDailyForecast(-1)} disabled={selectedMarker.dateIndex === 0}>
-                          {"<<  "}</button>
-                        {selectedMarker.current &&
-                          <h4>{selectedMarker.current.dateStr} ( {selectedMarker.dateIndex + 1} / {selectedMarker.num_dailies} )</h4>
-                        }
-                        <button className="nav-button" onClick={() => navigateDailyForecast(1)} disabled={!selectedMarker.current || (selectedMarker.dateIndex + 1 === selectedMarker.num_dailies)}>
-                          {"  >>"}</button>
-                      </div>
-                      <h3 className="info-window-title">
-                        {selectedMarker.current.timePeriod}: {selectedMarker.current.desc}</h3>
-                      {selectedMarker.geocode && <h4 className='info-window-location'>
-                        {selectedMarker.geocode.locationName} - {selectedMarker.geocode.neighbourhood}, {selectedMarker.geocode.city}, {selectedMarker.geocode.state}
-                      </h4>}
-                      <div className="info-window-body">
-                        <img className="info-window-image" src={selectedMarker.current.weatherIcon} alt={selectedMarker.current.desc} />
-                        <p className="info-window-desc">{selectedMarker.current.fullDesc}</p>
-                      </div>
-                      <div>
-                        <ul className="info-window-list">
-                          <table padding="0" className="info-window-content">
-                            <tbody>
-                              <tr>
-                                <td>Wind Speed:</td>
-                                <td>{selectedMarker.current.windSpeed} ({selectedMarker.current.windDirection})</td>
-                              </tr>
-                              {selectedMarker.current.temp && <tr>
-                                <td>Temperature:</td>
-                                <td>{selectedMarker.current.temp} °{selectedMarker.current.tempUnit} {selectedMarker.current.trend ? `(${selectedMarker.current.trend})` : ``}</td>
-                              </tr>}
-                              {selectedMarker.current.precipitation && <tr>
-                                <td>Precipitation:</td>
-                                <td>{selectedMarker.current.precipitation} {selectedMarker.current.precipitationUnit}</td>
-                              </tr>}
-                              {selectedMarker.current.relativeHumidity && <tr>
-                                <td>Humidity: </td>
-                                <td>{selectedMarker.current.relativeHumidity} {selectedMarker.current.relativeHumidityUnit}</td>
-                              </tr>}
-                              {selectedMarker.location.elevation && <tr>
-                                <td>Elevation: </td>
-                                <td>{selectedMarker.location.elevation} {selectedMarker.location.elevationUnit}</td>
-                              </tr>}
-                            </tbody>
-                          </table>
-                        </ul>
-                      </div>
-                      <div className="info-window-status">
-                        {(() => {
-                          const allSuccess = selectedMarker.allSucces || selectedMarker.failedStr === '';
-                          const failedStr = selectedMarker.failedStr;
-                          const messageStyle = {
-                            background: allSuccess ? 'lightgreen' : 'lightcoral',
-                            color: allSuccess ? 'darkgreen' : 'black',
-                            fontSize: failedStr.length > 9 ? '80%' : '100%',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            padding: '3px',
-                            paddingLeft: '5px',
-                          };
-                          return (
-                            <div style={messageStyle}>
-                              {allSuccess ? "PerfectTimeTo " + activity : `${selectedMarker.failedStr}`}
-                            </div>
-                          );
-                        })()}
-                      </div>
-                      <div className="info-window-remove">
-                        <button className="remove-button" onClick={() => removeMarker(selectedMarker.id)}>Remove</button>
-                      </div>
-                    </div>
-                  </InfoWindow>
+                  <InfoWindowComponent
+                    selectedMarker={selectedMarker}
+                    navigateDailyForecast={navigateDailyForecast}
+                    setSelectedMarker={setSelectedMarker}
+                    setMarkers={setMarkers}
+                    activity={activity}
+                  />
                 )}
               </GoogleMap>
             </div>
           ) : (
-            <h1>Loading...</h1>
+            <div className="loading-screen">
+              <CircularProgress
+                color="secondary"
+                size="100px"
+              />
+              <h2>loading...</h2>
+            </div>
           )}
         </LoadScript>
       </main>

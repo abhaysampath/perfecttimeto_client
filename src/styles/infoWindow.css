@@ -1,0 +1,122 @@
+.info-window {
+	color: black;
+	font-family: 'Montserrat';
+	padding: 0;
+	width: auto;
+	max-width: 350px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-window-time-select {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #eee;
+	height: 25px;
+	width: stretch;
+}
+
+.nav-button {
+	padding: 2px;
+	background-color: #eee;
+	color: black;
+	border: none;
+	cursor: pointer;
+}
+
+.nav-button:disabled {
+	color: #ccc;
+}
+
+.info-window-title {
+	margin-top: 10px;
+	margin-bottom: 10px;
+	text-align: center;
+	text-overflow: 'ellipsis';
+	white-space: nowrap;
+	overflow: hidden;
+	width: auto;
+}
+
+.info-window-location {
+	margin-top: 2px;
+	margin-bottom: 6px;
+	text-align: start;
+	text-overflow: 'ellipsis';
+	white-space: nowrap;
+	overflow: hidden;
+	width: auto;
+	margin-bottom: 10px;
+	font-weight: 400;
+}
+
+.info-window-body {
+	text-align: start;
+	display: flex;
+	align-items: flex-start;
+	gap: 5px;
+	padding-bottom: 8px;
+}
+
+.info-window-image {
+	width: 80px;
+	height: auto;
+	padding-top: 5px;
+}
+
+.info-window-desc {
+	width: stretch;
+	height: 89px;
+	font-weight: 300;
+	margin: 0;
+	line-height: 18px;
+	overflow: scroll;
+}
+
+.info-window-list {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.info-window-content {
+	padding: auto;
+	font-size: auto;
+	font-weight: bolder;
+	text-overflow: ellipsis;
+	vertical-align: auto;
+	padding-top: 3px;
+	padding-left: 10px;
+	align-tracks: center;
+}
+
+.info-window-status {
+	font-size: 17px;
+	font-weight: bolder;
+	font-family: 'Montserrat';
+	padding: 2px;
+	margin: 15px;
+	width: stretch;
+	text-align: center;
+	align-items: center;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.info-window-remove {
+	text-align: center;
+}
+.remove-button {
+	padding: 1px;
+	background-color: transparent;
+	color: gray;
+	border: none;
+	cursor: pointer;
+}
+.remove-button:hover {
+	background-color: gray;
+	color: black;
+}
+.nav-button:hover,
+.remove-button:hover {
+	opacity: 0.8;
+}
