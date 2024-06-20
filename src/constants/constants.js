@@ -1,5 +1,6 @@
 export const GMAPS_GEOCODE_URL = 'https://maps.googleapis.com/maps/api/geocode/json?';
 export const CORS_REDIRECT = "https://cors-anywhere.herokuapp.com/";
+export const WEATHER_URL = "https://api.weather.gov";
 // export const GMAPS_NEARBY_URL = 'https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/nearbysearch/json?';
 // export const DIRECT_GMAPS_NEARBY_URL = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json?';
 export const WEATHER_PERIOD_LIMIT = 25;
