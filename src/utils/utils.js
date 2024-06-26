@@ -12,6 +12,22 @@ export const daysInFuture = (n = 0) => {
 export const getPlacesKey = (lat, lng) => {
     return `${lat},${lng}`;
 };
+// export const getFilterLocations = (forecastsMap) => {
+//     console.log(`ABAB In getFilterLocations with forecastsMap.count: ${forecastsMap.size}`);
+//     let locations = [];
+//     forecastsMap.forEach((value, key) => {
+//         console.log(`ABABABA  key: ${key}, value: ${value}`);
+//         if (value.latitude && value.longitude && value.description) {
+//             locations.push({
+//                 latitude: value.latitude,
+//                 longitude: value.longitude,
+//                 // description: {value.geocode.locationName} - {value.geocode.neighbourhood}, {value.geocode.city}, {value.geocode.state}
+//             });
+//         }
+//     });
+//     return locations;
+// }
+
 export const dateCompare = (periodTime, filterTimeBound) => {
     if (periodTime.getHours() === filterTimeBound.hours) {
         if (periodTime.getMinutes() === filterTimeBound.minutes) {
@@ -72,19 +88,12 @@ export const convertFromMeters = (value, origUnits) => {
     return [value, getUnitString(origUnits)];
 };
 export const loadNWSData = (nws_data) => {
-    let [distance, distanceUnit] = convertFromMeters(
-        nws_data.properties.relativeLocation.properties.distance.value,
-        nws_data.properties.relativeLocation.properties.distance.unitCode);
-    console.log(`  parsed distance to: ${distance} ${distanceUnit}`)
-    // Add "bearing":{"unitCode":"wmoUnit:degree_(angle)","value":152}
     return {
         gridX: nws_data.properties.gridX,
         gridY: nws_data.properties.gridY,
         forecastOffice: nws_data.properties.cwa,
         city: nws_data.properties.relativeLocation.properties.city,
         state: nws_data.properties.relativeLocation.properties.state,
-        distanceUnit: distanceUnit,
-        distance: distance,
     };
 }
 export const loadWeatherForecast = (forecast) => {
@@ -104,7 +113,7 @@ export const loadWeatherForecast = (forecast) => {
         precipitationUnit: forecast.probabilityOfPrecipitation && forecast.probabilityOfPrecipitation.unitCode ? getUnitString(forecast.probabilityOfPrecipitation.unitCode) : undefined,
         dewpoint: forecast.dewpoint ? forecast.dewpoint.value.toFixed(2) : undefined,
         dewpointUnit: forecast.dewpoint ? getUnitString(forecast.dewpoint.unitCode) : undefined,
-        relativeHumidity: forecast.relativeHumidity? forecast.relativeHumidity.value : undefined,
+        relativeHumidity: forecast.relativeHumidity ? forecast.relativeHumidity.value : undefined,
         relativeHumidityUnit: forecast.relativeHumidity ? getUnitString(forecast.relativeHumidity.unitCode) : undefined,
         startTime: new Date(forecast.startTime),
         endTime: new Date(forecast.endTime),
@@ -113,6 +122,6 @@ export const loadWeatherForecast = (forecast) => {
         trend: forecast.temperatureTrend,
         desc: forecast.shortForecast,
         fullDesc: forecast.detailedForecast,
-        weatherIcon: forecast.icon? WEATHER_URL + forecast.icon: undefined,
+        weatherIcon: forecast.icon ? WEATHER_URL + forecast.icon : undefined,
     }
 };

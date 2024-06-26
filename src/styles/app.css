@@ -40,14 +40,23 @@
 .header-content {
 	display: flex;
 	align-items: center;
-	padding-right: 25px;
+	padding-right: 42px;
+}
+
+.contact-icon {
+	cursor: pointer;
+	position: fixed;
+	right: 10px;
+	margin-right: 3px;
+	margin-left: 5px;
 }
 
 .filter-icon {
 	cursor: pointer;
 	position: fixed;
-	right: 20px;
+	right: 36px;
 	margin-right: 3px;
+	margin-left: 5px;
 }
 
 .slider-container.disabled {
