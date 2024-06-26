@@ -1,0 +1,106 @@
+
+.contact-info-panel {
+    padding: 8px;
+    padding-top: 78px;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    min-width: 280px;
+    max-width: 85%;
+    background-color: #192044;
+    z-index: 3;
+    transition: width 0.5s ease-in-out;
+    overflow-y: auto;
+    opacity: 93%;
+}
+.contact-info-box {
+    background-color: aliceblue;
+    padding: 10px;
+    padding-top: 12px;
+    margin: 10px;
+    border: 1px solid #192044;
+    border-radius: 15px;
+    color: white;
+}
+.contact-info-title {
+    padding-top: 16px;
+    padding-left: 12px;
+}
+.create-alert-title {
+    font-size: 24px;
+    font-weight: 300;
+    margin-left: 10px;
+    color: white;
+}
+.contact-input-type {
+    color: white;
+    opacity: 93%;
+    font-size: 16px;
+    font-weight: 300;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    align-items: end;
+}
+.phone-email-selector {
+    margin: 16px;
+    background-color: azure;
+    border: 1px solid #192044;
+}
+.contact-info-subtitle {
+    font-size: 22px;
+    font-weight: 300;
+    padding: 0;
+    margin: 0;
+    color: #192044;
+}
+.locations-accordion {
+    border: 2px ;
+}
+.locations-accordion-details {
+    margin-bottom: 23px;
+    right: 0;
+}
+.contact-location-index {
+    font-size: 18px;
+    font-weight: 300;
+    margin: 2px;
+    margin-bottom: 0;
+    padding-bottom: 0;
+    color: gray;
+}
+.contact-filter-label {
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+.contact-filter-field {
+    color-scheme: light;
+    width: 100%;
+    width: 100%;
+}
+.contact-text-field {
+    color-scheme: light;
+    width: 100%;
+}
+.contact-text-field2 {
+    color-scheme: light;
+    width: 100%;
+    margin-right: 10px;
+}
+.contact-info-submit-button {
+    font-size: 19px;
+    font-weight: 500;
+}
+.contact-carrier-label {
+    color: white;
+    font-size: 18px;
+    font-weight: 300;
+    margin-bottom: -13px;
+    margin-inline: 12px;
+}
+.contact-text-field:focus {
+    color: white;
+}

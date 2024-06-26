@@ -5,6 +5,7 @@ import { Fab } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import TuneIcon from '@mui/icons-material/Tune';
+import AddAlert from '@mui/icons-material/AddAlert';
 import { SHOW_FILTERS_ON_LOAD } from './constants/constants';
 import { INITIAL_MAP_CENTER, INITIAL_MAP_OPTIONS, MAP_CONTAINER_STYLE, DEFAULT_ZOOM_LEVEL, PLACES_LIBRARY, SEARCH_BOX_STYLE } from "./constants/map-constants";
 import { INIT_FILTER_CONFIG } from './constants/filter-constants';
@@ -12,6 +13,7 @@ import { loadWeatherForecast, getPlacesKey, convertFromMeters, loadNWSData } fro
 import { checkAllFilters, filterForecastsByDate, getUniqueShortDates } from './utils/filterUtils.js';
 import { getCurrentLocation, getIPLocation } from './utils/locationUtils.js';
 import SliderComponent from './components/SliderComponent.js';
+import ContactInfoComponent from './components/ContactInfoComponent.js';
 import InfoWindowComponent from './components/infoWindow.js';
 import './styles/app.css';
 
@@ -19,10 +21,12 @@ function App() {
   const [mapRef, setMapRef] = useState(null);
   const [mapCenter, setMapCenter] = useState(INITIAL_MAP_CENTER);
   const [markers, setMarkers] = useState([]);
+  const [geoData, setGeoData] = useState(new Map());
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [activity] = useState("fly a kite");
   const [locationRequested, setLocationRequested] = useState(false);
   const [showFilters, setShowFilters] = useState(SHOW_FILTERS_ON_LOAD);
+  const [showContactInfo, setShowContactInfo] = useState(false);
   const [sliderStates, setSliderStates] = useState(
     INIT_FILTER_CONFIG.map(filter => ({
       name: filter.name,
@@ -60,8 +64,6 @@ function App() {
         return;
       }
       setMapCenter({ lat: l.lat, lng: l.lng });
-      const latLng = { "lat": l.lat, "lng": l.lng };
-      console.log(`AAAA Location: ${JSON.stringify({ latLng })}`);
       addMarker(l.lat, l.lng);
     }).finally(() => {
       setLocationRequested(false);
@@ -173,7 +175,7 @@ function App() {
     const newMarker = {
       id: new Date().toISOString(),
       position: { lat: lat, lng: lng },
-      placeKey: getPlacesKey(lat, lng),
+      placeKey: placeKey,
       pixel: pixel,
       placeIndex: placesCounter
     };
@@ -212,7 +214,13 @@ function App() {
       placeClass: data.class,
       placeType: data.type,
     };
-    addToForecastsMap(getPlacesKey(lat, lng), "geocode", { ...formattedData });
+    const placeKey = getPlacesKey(lat, lng);
+    addToForecastsMap(placeKey, "geocode", { ...formattedData });
+    setGeoData(geoData => {
+      const updatedGeoData = new Map(geoData);
+      updatedGeoData.set(placeKey, { lat, lng, fullAddress: formattedData.fullAddress });
+      return updatedGeoData;
+    });
   }
   //Show InfoWindow, populate with data
   const onMarkerClick = useCallback((marker) => {
@@ -261,6 +269,9 @@ function App() {
   const toggleFilterPanel = () => {
     setShowFilters(prev => !prev);
   };
+  const toggleContactInfoPanel = () => {
+    setShowContactInfo(prev => !prev);
+  };
 
   return (
     <div className="App">
@@ -270,6 +281,11 @@ function App() {
           <select className="dropdown" onChange={() => window.location.reload()}>
             <option>{activity}</option>
           </select>
+          <AddAlert
+            alt="Contact Icon"
+            className="contact-icon"
+            onClick={toggleContactInfoPanel}
+          />
           <TuneIcon
             alt="Filter Icon"
             className="filter-icon"
@@ -339,11 +355,7 @@ function App() {
             </div>
           ) : (
             <div className="loading-screen">
-              <CircularProgress
-                color="secondary"
-                size="100px"
-              />
-              <h2>loading...</h2>
+              <CircularProgress color="secondary" size="100px" /><h2>loading...</h2>
             </div>
           )}
         </LoadScript>
@@ -358,6 +370,12 @@ function App() {
               onSliderChange={handleSliderChange} />;
           })}
         </div>
+      )}
+      {showContactInfo && (
+        <ContactInfoComponent className="contact-info-panel"
+          geoData={geoData.values()}
+          filterValues={sliderStates}
+        />
       )}
     </div>
   );
