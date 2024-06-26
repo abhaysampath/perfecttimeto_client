@@ -56,7 +56,7 @@ const ContactInfoComponent = ({ geoData, filterValues }) => {
                     </Grid>
                 </Grid>
                 <div className='contact-info-box'>
-                    <form id="contactForm" name="contact" method="POST" data-netlify="true" onSubmit={handleSubmit}>
+                    <form id="contactForm" name="contact" netlify method="POST" data-netlify="true" onSubmit={handleSubmit}>
                         <input type="hidden" name="form-name" value="contact" />
                         <TextField className="contact-text-field" variant="filled" size="small"
                             label="Name" name="username" required onChange={handleInputChange} />
