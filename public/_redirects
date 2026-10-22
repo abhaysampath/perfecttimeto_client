@@ -4,10 +4,10 @@
 # The `!` forces proxying so the browser URL stays on perfecttimeto.com/2wa.
 
 # API calls go to the watch list's own function.
-/2wa/api/*  https://stirring-fox-78845d.netlify.app/api/:splat  200!
+/2wa/api/*  https://perfecttimeto-watch-list.netlify.app/api/:splat  200!
 
 # Everything else (the app shell and its assets).
-/2wa/*  https://stirring-fox-78845d.netlify.app/:splat  200!
+/2wa/*  https://perfecttimeto-watch-list.netlify.app/:splat  200!
 
 # The bare path, without a trailing slash.
-/2wa  https://stirring-fox-78845d.netlify.app/  200!
+/2wa  https://perfecttimeto-watch-list.netlify.app/  200!
